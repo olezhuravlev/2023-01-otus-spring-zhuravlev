@@ -2,46 +2,66 @@ package ru.otus.spring.domain;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.beans.BeansException;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import ru.otus.spring.TestConfig;
+import ru.otus.spring.model.Answer;
 import ru.otus.spring.model.Question;
+import ru.otus.spring.service.QuestionsParser;
+import ru.otus.spring.service.UserProvider;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
-
+import static org.mockito.ArgumentMatchers.anyString;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:spring-context.xml"})
-public class QuestionnaireTest implements ApplicationContextAware {
+@ContextConfiguration(classes = TestConfig.class)
+@TestPropertySource("classpath:test.properties")
+public class QuestionnaireTest {
 
-    private ApplicationContext context;
+    @Autowired
+    ApplicationContext context;
 
-    @Override
-    public void setApplicationContext(ApplicationContext context) throws BeansException {
-        this.context = context;
-    }
+    @Autowired
+    UserProvider userProvider;
+
+    @Autowired
+    QuestionsParser questionsParser;
 
     @Test
-    public void questionnaireTest() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public void runTest() {
 
-        Questionnaire questionnaire = context.getBean(Questionnaire.class);
+        List<Answer> answers = new ArrayList<>();
+        answers.add(new Answer("Test answer 1"));
+        answers.add(new Answer("Test answer 2"));
 
-        List<Question> questions = (List<Question>) getParseContentMethod().invoke(questionnaire);
+        List<Question> questions = new ArrayList<>();
+        questions.add(new Question("Test question", "1", answers));
 
-        assertEquals("Wrong amount of imported questions", 1, questions.size());
-        Question question = questions.get(0);
-        assertEquals("Wron amount of imported answers", 3, question.getAnswers().size());
-    }
+        Mockito.when(userProvider.getUserName()).thenReturn("Test user");
+        Mockito.when(questionsParser.parse(anyString())).thenReturn(questions);
 
-    private Method getParseContentMethod() throws NoSuchMethodException {
-        Method method = Questionnaire.class.getDeclaredMethod("parseContent");
-        method.setAccessible(true);
-        return method;
+        // We have to mock tested class if we need to mock methods in it.
+        Questionnaire questionnaire = Mockito.spy(context.getBean(Questionnaire.class));
+
+        // Simulate user's input "1" (correct answer).
+        Mockito.doReturn("1").when(questionnaire).getUserInput();
+        questionnaire.run();
+
+        // One correct answer must be counted in.
+        assertEquals("One correct answer must registered", 1, questionnaire.performExam());
+
+        // Simulate user's input "2" (wrong answer).
+        Mockito.doReturn("2").when(questionnaire).getUserInput();
+        questionnaire.run();
+
+        // No correct answers done..
+        assertEquals("No correct answers must registered", 0, questionnaire.performExam());
     }
 }

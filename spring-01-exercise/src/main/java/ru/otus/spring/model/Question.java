@@ -15,7 +15,6 @@ public class Question {
         this.answers = new ArrayList<>(answers);
     }
 
-
     public List<Answer> getAnswers() {
         return new ArrayList<>(answers);
     }
@@ -30,9 +29,9 @@ public class Question {
         StringBuilder builder = new StringBuilder();
         for (var i = 0; i < answers.size(); i++) {
             String answer = answers.get(i).toString();
-            builder.append("[" + (i + 1) + "] " + answer + "\n");
+            builder.append("[").append(i + 1).append("] ").append(answer).append("\n");
         }
 
-        return text + "\n" + builder.toString();
+        return text + "\n" + builder;
     }
 }
