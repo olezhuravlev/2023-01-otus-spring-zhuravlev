@@ -5,21 +5,26 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import ru.otus.spring.model.Question;
 import ru.otus.spring.service.QuestionsParser;
+import ru.otus.spring.service.Receiver;
+import ru.otus.spring.service.Renderer;
 import ru.otus.spring.service.UserProvider;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 @Component
-@PropertySource("classpath:questionnaire.properties")
-public class Questionnaire {
+@PropertySource("classpath:test_outlook.properties")
+public class TestOutlook implements Test {
 
     private final List<Question> questionList;
     private String userName;
 
     private final UserProvider userProvider;
     private final QuestionsParser questionsParser;
+    private final Receiver receiver;
+    private final Renderer renderer;
+
+    private int result;
 
     @Value("${successMessage}")
     private String successMessage;
@@ -27,58 +32,69 @@ public class Questionnaire {
     @Value("${failMessage}")
     private String failMessage;
 
+    @Value("${isNotDoneMessage}")
+    private String isNotDoneMessage;
+
     @Value("${questionsPath}")
     private String questionsPath;
 
     @Value("${successThreshold}")
     private int successThreshold;
 
-    public Questionnaire(UserProvider userProvider, QuestionsParser questionsParser) {
+    public TestOutlook(UserProvider userProvider, QuestionsParser questionsParser, Receiver receiver, Renderer renderer) {
         this.userProvider = userProvider;
         this.questionsParser = questionsParser;
+        this.receiver = receiver;
+        this.renderer = renderer;
         this.questionList = new ArrayList<>();
         this.userName = "";
+        this.result = -1;
     }
 
+    @Override
     public void run() {
-
         List<Question> questions = questionsParser.parse(questionsPath);
         questionList.addAll(questions);
-
-        int correctAnswers = performExam();
-        printResult(correctAnswers);
+        result = performExam();
     }
 
-    public int performExam() {
+    private int performExam() {
 
         int correctAnswersCounter = 0;
         userName = userProvider.getUserName();
 
         for (Question question : questionList) {
-            String text = question.toString();
-            System.out.println(text);
-            System.out.println("Enter number of your answer:");
 
-            String userAnswer = getUserInput();
+            renderer.render(question.toString());
+
+            String userAnswer = receiver.receive("Enter number of your answer:");
+
+            String message;
             if (question.getCorrectAnswerPosition().equals(userAnswer)) {
                 ++correctAnswersCounter;
-                System.out.println("Correct!\n");
+                message = "Correct!\n";
             } else {
-                System.out.println("Wrong!\n");
+                message = "Wrong!\n";
             }
+            renderer.render(message);
         }
 
         return correctAnswersCounter;
     }
 
-    public String getUserInput() {
-        Scanner scanner = new Scanner(System.in);
-        return scanner.nextLine();
+    @Override
+    public int getResult() {
+        return result;
     }
 
-    private void printResult(int correctAnswersCounter) {
+    @Override
+    public String getResultDescription() {
 
-        double correctAnswersShare = (double) correctAnswersCounter / questionList.size() * 100;
+        if (result < 0) {
+            return isNotDoneMessage;
+        }
+
+        double correctAnswersShare = (double) result / questionList.size() * 100;
 
         String resultMessage;
         if (correctAnswersShare > successThreshold) {
@@ -87,6 +103,6 @@ public class Questionnaire {
             resultMessage = failMessage;
         }
 
-        System.out.printf(resultMessage, userName, (int) correctAnswersShare + "%", successThreshold + "%");
+        return String.format(resultMessage, userName, (int) correctAnswersShare + "%", successThreshold + "%");
     }
 }
