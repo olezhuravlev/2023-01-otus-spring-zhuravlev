@@ -2,6 +2,7 @@ package ru.otus.spring.service;
 
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.stereotype.Component;
+import ru.otus.spring.aop.LoggedMethod;
 import ru.otus.spring.model.Answer;
 import ru.otus.spring.model.Question;
 
@@ -12,6 +13,7 @@ import java.util.List;
 @Component
 public class CSVParser implements Parser<Question, CSVRecord> {
 
+    @LoggedMethod
     @Override
     public Question parse(CSVRecord record) {
 

@@ -1,0 +1,10 @@
+spring:
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+
+application:
+  autorun: false
+  questions-path: questions.csv
+  success-threshold: 70
+  logger-enabled: false

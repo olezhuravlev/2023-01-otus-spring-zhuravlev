@@ -7,14 +7,13 @@ import java.util.Scanner;
 @Service
 public class UserProvider {
 
-    private String userName = "";
-
-    public String getUserName() {
+    public String getUserName(String welcomeText) {
 
         Scanner scanner = new Scanner(System.in);
 
+        String userName = "";
         while (userName.isBlank()) {
-            System.out.println("Enter your name:");
+            System.out.println(welcomeText);
             userName = scanner.nextLine();
         }
 
