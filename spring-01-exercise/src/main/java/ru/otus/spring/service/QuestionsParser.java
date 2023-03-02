@@ -15,9 +15,9 @@ import java.util.List;
 @Component
 public class QuestionsParser implements Parser<List<Question>, String> {
 
-    private final CSVParser csvParser;
+    private final Parser csvParser;
 
-    public QuestionsParser(CSVParser csvParser) {
+    public QuestionsParser(Parser csvParser) {
         this.csvParser = csvParser;
     }
 
@@ -35,7 +35,7 @@ public class QuestionsParser implements Parser<List<Question>, String> {
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             Iterable<CSVRecord> records = CSVFormat.DEFAULT.parse(bufferedReader);
             for (CSVRecord record : records) {
-                Question question = csvParser.parse(record);
+                Question question = (Question) csvParser.parse(record);
                 if (question != null) {
                     result.add(question);
                 }
