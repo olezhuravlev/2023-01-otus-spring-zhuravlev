@@ -1,7 +1,7 @@
 package ru.otus.spring.domain;
 
 public interface Quiz {
-    void run();
+    void run(String username);
     int getResult();
     String getResultDescription();
 }
