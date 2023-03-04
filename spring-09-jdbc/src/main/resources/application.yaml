@@ -1,0 +1,57 @@
+application:
+  locale: ru_RU
+  db-like-template: '%'
+spring:
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+  shell:
+    interactive:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:librarydb
+    #initialization-mode: always
+    #schema: schema.sql
+    #data: data.sql
+  liquibase:
+    enabled: true
+#  sql:
+#    init:
+#      mode: never
+#      data-locations: data.sql
+#      schema-locations: schema.sql
+  h2:
+    console:
+      path: /h2-console
+      settings:
+        web-allow-others: true
+---
+string-printer:
+  columns:
+    authors:
+      id:
+        header: AUTHOR ID
+        width: 6
+      name:
+        header: NAME
+        width: 40
+    genres:
+      id:
+        header: GENRE ID
+        width: 5
+      name:
+        header: NAME
+        width: 40
+    books:
+      id:
+        header: BOOK ID
+        width: 7
+      title:
+        header: TITLE
+        width: 40
+      author:
+        header: AUTHOR
+        width: 30
+      genre:
+        header: GENRE
+        width: 15
