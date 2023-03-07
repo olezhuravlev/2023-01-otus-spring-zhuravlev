@@ -22,6 +22,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 @SpringBootTest
 public class QuizOutlookTest {
 
+    private final String USERNAME = "Test user";
+
     @MockBean
     UserProvider userProvider;
 
@@ -48,19 +50,19 @@ public class QuizOutlookTest {
         List<Question> questions = new ArrayList<>();
         questions.add(new Question("Test question", "1", answers));
 
-        Mockito.when(userProvider.getUserName("")).thenReturn("Test user");
+        Mockito.when(userProvider.getUserName("")).thenReturn(USERNAME);
         Mockito.when(questionsParser.parse(anyString())).thenReturn(questions);
 
         // Simulate user's input "1" (correct answer).
         Mockito.when(receiver.receive(anyString())).thenReturn("1");
-        quizOutlook.run();
+        quizOutlook.run(USERNAME);
 
         // One correct answer must be given.
         assertEquals(1, quizOutlook.getResult(), "Just one correct answer must be registered");
 
         // Simulate user's input "2" (wrong answer).
         Mockito.when(receiver.receive(anyString())).thenReturn("2");
-        quizOutlook.run();
+        quizOutlook.run(USERNAME);
 
         // No correct answers must be given.
         assertEquals(0, quizOutlook.getResult(), "No correct answers must be registered");

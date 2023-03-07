@@ -28,14 +28,13 @@ public class QuizOutlook implements Quiz {
     private final AppProps appProps;
     private final MessageSource messageSource;
 
-    private final List<Question> questionList;
-    private String userName;
-
     private final UserProvider userProvider;
     private final Parser questionsParser;
     private final Receiver receiver;
     private final Renderer renderer;
 
+    private List<Question> questionList;
+    private String userName;
     private int result;
 
     public QuizOutlook(UserProvider userProvider, Parser questionsParser, Receiver receiver, Renderer renderer, AppProps appProps, MessageSource messageSource) {
@@ -51,9 +50,9 @@ public class QuizOutlook implements Quiz {
     }
 
     @Override
-    public void run() {
-        List<Question> questions = (List<Question>) questionsParser.parse(appProps.questionsPath());
-        questionList.addAll(questions);
+    public void run(String userName) {
+        this.userName = userName;
+        questionList = (List<Question>) questionsParser.parse(appProps.questionsPath());
         result = performExam();
     }
 
@@ -92,8 +91,11 @@ public class QuizOutlook implements Quiz {
         var locale = appProps.locale();
 
         int correctAnswersCounter = 0;
-        String welcomeText = messageSource.getMessage(ENTER_NAME_KEY, null, locale);
-        userName = userProvider.getUserName(welcomeText);
+
+        if (userName.isBlank()) {
+            String welcomeText = messageSource.getMessage(ENTER_NAME_KEY, null, locale);
+            userName = userProvider.getUserName(welcomeText);
+        }
 
         for (Question question : questionList) {
 
