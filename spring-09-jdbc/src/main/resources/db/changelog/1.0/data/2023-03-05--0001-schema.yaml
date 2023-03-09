@@ -1,0 +1,77 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2023-03-03--0001--schema-01
+      author: olezhuravlev
+      createTable:
+        tableName: authors
+        columns:
+          - column:
+              name: id
+              type: bigint
+              autoIncrement: true
+              startWith: 100
+              constraints:
+                nullable: false
+                primaryKey: true
+                primaryKeyName: pk_author
+          - column:
+              name: name
+              type: varchar(255)
+              constraints:
+                nullable: false
+  - changeSet:
+      id: 2023-03-03--0001--genre-02
+      author: olezhuravlev
+      createTable:
+        tableName: genres
+        columns:
+          - column:
+              name: id
+              type: bigint
+              autoIncrement: true
+              startWith: 100
+              constraints:
+                nullable: false
+                primaryKey: true
+                primaryKeyName: pk_genre
+          - column:
+              name: name
+              type: varchar(255)
+              constraints:
+                nullable: false
+  - changeSet:
+      id: 2023-03-03--0001--schema-03
+      author: olezhuravlev
+      createTable:
+        tableName: books
+        columns:
+          - column:
+              name: id
+              type: bigint
+              autoIncrement: true
+              startWith: 100
+              constraints:
+                nullable: false
+                primaryKey: true
+                primaryKeyName: pk_book
+          - column:
+              name: title
+              type: varchar(255)
+              constraints:
+                nullable: false
+          - column:
+              name: id_author
+              type: bigint
+              constraints:
+                nullable: false
+                foreignKeyName: id_author
+                references: authors(id)
+                deleteCascade: true
+          - column:
+              name: id_genre
+              type: bigint
+              constraints:
+                nullable: false
+                foreignKeyName: id_genre
+                references: genres(id)
+                deleteCascade: true
