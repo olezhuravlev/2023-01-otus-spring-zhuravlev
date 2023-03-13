@@ -7,7 +7,7 @@ spring:
     encoding: UTF-8
   shell:
     interactive:
-      enabled: false
+      enabled: true
   datasource:
     url: jdbc:h2:mem:librarydb
     #initialization-mode: always

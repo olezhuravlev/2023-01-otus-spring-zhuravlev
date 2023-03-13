@@ -42,4 +42,4 @@ databaseChangeLog:
                 nullable: true
                 foreignKeyName: book_id
                 references: books(id)
-                deleteCascade: false
+                deleteCascade: true
