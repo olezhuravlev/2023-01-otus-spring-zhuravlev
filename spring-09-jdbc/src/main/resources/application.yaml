@@ -7,7 +7,7 @@ spring:
     encoding: UTF-8
   shell:
     interactive:
-      enabled: true
+      enabled: false
   datasource:
     url: jdbc:h2:mem:librarydb
     #initialization-mode: always
@@ -20,6 +20,11 @@ spring:
 #      mode: never
 #      data-locations: data.sql
 #      schema-locations: schema.sql
+  jpa:
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+    show-sql: true
   h2:
     console:
       path: /h2-console

@@ -1,10 +1,10 @@
-package ru.otus.spring.dao;
+package ru.otus.spring.repositories;
 
 import ru.otus.spring.model.Book;
 
 import java.util.List;
 
-public interface BookDao {
+public interface BookRepo {
     List<Book> read();
     Book read(long id);
     List<Book> read(String title);

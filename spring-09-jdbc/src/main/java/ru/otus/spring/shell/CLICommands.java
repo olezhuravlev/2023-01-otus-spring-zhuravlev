@@ -5,17 +5,16 @@ import org.springframework.context.MessageSource;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import ru.otus.spring.configs.AppProps;
-import ru.otus.spring.dao.AuthorDao;
-import ru.otus.spring.dao.BookDao;
-import ru.otus.spring.dao.GenreDao;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
 import ru.otus.spring.model.Genre;
+import ru.otus.spring.repositories.AuthorRepo;
+import ru.otus.spring.repositories.BookRepo;
+import ru.otus.spring.repositories.GenreRepo;
 import ru.otus.spring.service.printers.AuthorPrinter;
 import ru.otus.spring.service.printers.BookPrinter;
 import ru.otus.spring.service.printers.GenrePrinter;
 
-import java.util.Arrays;
 import java.util.List;
 
 @ShellComponent
@@ -33,9 +32,9 @@ public class CLICommands {
 
     private final AppProps appProps;
 
-    private final AuthorDao authorDao;
-    private final GenreDao genreDao;
-    private final BookDao bookDao;
+    private final AuthorRepo authorRepo;
+    private final GenreRepo genreRepo;
+    private final BookRepo bookRepo;
 
     private final AuthorPrinter authorPrinter;
     private final GenrePrinter genrePrinter;
@@ -47,74 +46,74 @@ public class CLICommands {
 
     @ShellMethod(value = "get list of all authors", key = {"a", "aa", "get-all-authors"})
     public String getAuthors() {
-        List<Author> authors = authorDao.read();
+        List<Author> authors = authorRepo.read();
         return authorPrinter.print(authors);
     }
 
     @ShellMethod(value = "get list of all genres", key = {"g", "ga", "get-all-genres"})
     public String getGenres() {
-        List<Genre> genres = genreDao.read();
+        List<Genre> genres = genreRepo.read();
         return genrePrinter.print(genres);
     }
 
     @ShellMethod(value = "get list of all books", key = {"ba", "get-all-books"})
     public String getBook() {
-        List<Book> books = bookDao.read();
+        List<Book> books = bookRepo.read();
         return bookPrinter.print(books);
     }
 
-    @ShellMethod(value = "find book by ID", key = {"b", "get-book"})
-    public String getBook(long id) {
-        Book book = bookDao.read(id);
-        return bookPrinter.print(Arrays.asList(book));
-    }
-
-    @ShellMethod(value = "find books by title", key = {"bt", "get-book-by-title"})
-    public String getBook(String title) {
-        List<Book> books = bookDao.read(title);
-        return bookPrinter.print(books);
-    }
-
-    @ShellMethod(value = "create book", key = {"bc", "create-book"})
-    public String createBook() {
-
-        String welcomeText = messageSource.getMessage(ENTER_BOOK_TITLE, null, appProps.locale());
-        String title = cliValueProvider.getValue(welcomeText);
-
-        welcomeText = messageSource.getMessage(ENTER_AUTHOR_ID, null, appProps.locale());
-        long id_author = Long.parseLong(cliValueProvider.getValue(welcomeText));
-
-        welcomeText = messageSource.getMessage(ENTER_GENRE_ID, null, appProps.locale());
-        long id_genre = Long.parseLong(cliValueProvider.getValue(welcomeText));
-
-        int result = bookDao.create(title, id_author, id_genre);
-        return messageSource.getMessage(ROWS_CREATED, new String[]{String.valueOf(result)}, appProps.locale());
-    }
-
-    @ShellMethod(value = "update book", key = {"bu", "update-book"})
-    public String updateBook(long id) {
-
-        Book book = bookDao.read(id);
-        if (book == null) {
-            return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
-        }
-
-        String welcomeText = messageSource.getMessage(ENTER_BOOK_TITLE, null, appProps.locale());
-        String title = cliValueProvider.getValue(welcomeText + " (" + book.getTitle() + "):");
-
-        welcomeText = messageSource.getMessage(ENTER_AUTHOR_ID, null, appProps.locale());
-        long id_author = Long.parseLong(cliValueProvider.getValue(welcomeText + " (" + book.getAuthor() + "):"));
-
-        welcomeText = messageSource.getMessage(ENTER_GENRE_ID, null, appProps.locale());
-        long id_genre = Long.parseLong(cliValueProvider.getValue(welcomeText + " (" + book.getGenre() + "):"));
-
-        int result = bookDao.update(id, title, id_author, id_genre);
-        return messageSource.getMessage(ROWS_CHANGED, new String[]{String.valueOf(result)}, appProps.locale());
-    }
-
-    @ShellMethod(value = "delete book", key = {"bd", "delete-book"})
-    public String deleteBook(long id) {
-        int result = bookDao.delete(id);
-        return messageSource.getMessage(ROWS_DELETED, new String[]{String.valueOf(result)}, appProps.locale());
-    }
+//    @ShellMethod(value = "find book by ID", key = {"b", "get-book"})
+//    public String getBook(long id) {
+//        Book book = bookDao.read(id);
+//        return bookPrinter.print(Arrays.asList(book));
+//    }
+//
+//    @ShellMethod(value = "find books by title", key = {"bt", "get-book-by-title"})
+//    public String getBook(String title) {
+//        List<Book> books = bookDao.read(title);
+//        return bookPrinter.print(books);
+//    }
+//
+//    @ShellMethod(value = "create book", key = {"bc", "create-book"})
+//    public String createBook() {
+//
+//        String welcomeText = messageSource.getMessage(ENTER_BOOK_TITLE, null, appProps.locale());
+//        String title = cliValueProvider.getValue(welcomeText);
+//
+//        welcomeText = messageSource.getMessage(ENTER_AUTHOR_ID, null, appProps.locale());
+//        long id_author = Long.parseLong(cliValueProvider.getValue(welcomeText));
+//
+//        welcomeText = messageSource.getMessage(ENTER_GENRE_ID, null, appProps.locale());
+//        long id_genre = Long.parseLong(cliValueProvider.getValue(welcomeText));
+//
+//        int result = bookDao.create(title, id_author, id_genre);
+//        return messageSource.getMessage(ROWS_CREATED, new String[]{String.valueOf(result)}, appProps.locale());
+//    }
+//
+//    @ShellMethod(value = "update book", key = {"bu", "update-book"})
+//    public String updateBook(long id) {
+//
+//        Book book = bookDao.read(id);
+//        if (book == null) {
+//            return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
+//        }
+//
+//        String welcomeText = messageSource.getMessage(ENTER_BOOK_TITLE, null, appProps.locale());
+//        String title = cliValueProvider.getValue(welcomeText + " (" + book.getTitle() + "):");
+//
+//        welcomeText = messageSource.getMessage(ENTER_AUTHOR_ID, null, appProps.locale());
+//        long id_author = Long.parseLong(cliValueProvider.getValue(welcomeText + " (" + book.getAuthor() + "):"));
+//
+//        welcomeText = messageSource.getMessage(ENTER_GENRE_ID, null, appProps.locale());
+//        long id_genre = Long.parseLong(cliValueProvider.getValue(welcomeText + " (" + book.getGenre() + "):"));
+//
+//        int result = bookDao.update(id, title, id_author, id_genre);
+//        return messageSource.getMessage(ROWS_CHANGED, new String[]{String.valueOf(result)}, appProps.locale());
+//    }
+//
+//    @ShellMethod(value = "delete book", key = {"bd", "delete-book"})
+//    public String deleteBook(long id) {
+//        int result = bookDao.delete(id);
+//        return messageSource.getMessage(ROWS_DELETED, new String[]{String.valueOf(result)}, appProps.locale());
+//    }
 }

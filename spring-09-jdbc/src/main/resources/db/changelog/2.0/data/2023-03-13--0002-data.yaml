@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2023-03-13--0003-book_comments
+      author: olezhuravlev
+      context: test
+      runOnChange: true
+      loadUpdateData:
+        primaryKey: id
+        file: 2023-03-13--0003-book_comments.csv
+        relativeToChangelogFile: true
+        separator: ;
+        quotChar: '"'
+        seperator: ';'
+        encoding: UTF-8
+        tableName: book_comments
