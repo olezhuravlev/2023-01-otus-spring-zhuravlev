@@ -20,6 +20,11 @@ spring:
 #      mode: never
 #      data-locations: data.sql
 #      schema-locations: schema.sql
+  jpa:
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+    show-sql: true
   h2:
     console:
       path: /h2-console
@@ -55,3 +60,10 @@ string-printer:
       genre:
         header: GENRE
         width: 15
+    bookComments:
+      id:
+        header: COMMENT ID
+        width: 10
+      text:
+        header: COMMENT TEXT
+        width: 70

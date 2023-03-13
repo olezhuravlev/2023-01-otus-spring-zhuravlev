@@ -15,10 +15,9 @@ public class AuthorPrinter extends AbstractStringPrinter<Author> {
     }
 
     @Override
-    protected void printRows(List<Author> authors, StringBuilder stringBuilder) {
+    protected void printRows(List<Author> authors, StringBuilder stringBuilder, Map<String, Map<String, String>> columns) {
         for (Author author : authors) {
             Map<String, String> values = Map.of("id", String.valueOf(author.getId()), "name", author.getName());
-            Map<String, Map<String, String>> columns = printProps.getColumns(getKey());
             stringBuilder.append(printValues(values, columns));
         }
     }
