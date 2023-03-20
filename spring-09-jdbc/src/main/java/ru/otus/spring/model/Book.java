@@ -12,7 +12,8 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "books")
-@NamedEntityGraph(name = "book-eg", attributeNodes = {@NamedAttributeNode("author"), @NamedAttributeNode("genre")})
+@NamedEntityGraph(name = "book-author-genre", attributeNodes = {@NamedAttributeNode("author"), @NamedAttributeNode("genre")})
+@NamedEntityGraph(name = "book-comments", attributeNodes = {@NamedAttributeNode("bookComments")})
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,15 +22,15 @@ public class Book {
     @Column(name = "title", nullable = false, unique = false)
     private String title;
 
-    @ManyToOne(targetEntity = Author.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(targetEntity = Author.class, cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
     private Author author;
 
-    @ManyToOne(targetEntity = Genre.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToOne(targetEntity = Genre.class, cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinColumn(name = "genre_id", nullable = false)
     private Genre genre;
 
-    @OneToMany(targetEntity = BookComment.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(targetEntity = BookComment.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @JoinColumn(name = "book_id", nullable = false)
     private List<BookComment> bookComments;
 }

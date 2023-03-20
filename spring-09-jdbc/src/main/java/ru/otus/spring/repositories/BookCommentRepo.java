@@ -7,10 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookCommentRepo {
-    Optional<BookComment> read(Book book, long comment_id);
-    List<BookComment> read(Book book);
+    Optional<BookComment> find(Book book, long commentId);
     BookComment create(Book book, String text);
     BookComment update(Book book, BookComment bookComment, String text);
-    Book delete(Book book, BookComment bookComment);
-    Book deleteAll(Book book);
+    Book remove(Book book, BookComment bookComment);
+    Book removeAll(Book book);
 }

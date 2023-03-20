@@ -3,11 +3,13 @@ package ru.otus.spring.repositories;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.spring.model.Book;
 import ru.otus.spring.model.BookComment;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +21,7 @@ public class BookCommentRepoJpa implements BookCommentRepo {
     private final EntityManager entityManager;
 
     @Override
-    public Optional<BookComment> read(Book book, long commentId) {
+    public Optional<BookComment> find(Book book, long commentId) {
 
         var query = entityManager.createQuery("""
                 SELECT DISTINCT b FROM Book b
@@ -40,14 +42,6 @@ public class BookCommentRepoJpa implements BookCommentRepo {
         }
 
         return Optional.ofNullable(foundComment);
-    }
-
-    @Transactional
-    @Override
-    public List<BookComment> read(Book book) {
-        Book bookAttached = entityManager.merge(book);
-        List<BookComment> bookComments = bookAttached.getBookComments();
-        return bookComments;
     }
 
     @Transactional
@@ -86,7 +80,7 @@ public class BookCommentRepoJpa implements BookCommentRepo {
 
     @Transactional
     @Override
-    public Book delete(Book book, BookComment bookComment) {
+    public Book remove(Book book, BookComment bookComment) {
 
         Book bookAttached = entityManager.merge(book);
         List<BookComment> bookComments = bookAttached.getBookComments();
@@ -101,7 +95,7 @@ public class BookCommentRepoJpa implements BookCommentRepo {
 
     @Transactional
     @Override
-    public Book deleteAll(Book book) {
+    public Book removeAll(Book book) {
 
         Book bookAttached = entityManager.merge(book);
         List<BookComment> bookComments = bookAttached.getBookComments();

@@ -2,8 +2,10 @@ package ru.otus.spring.shell;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
+import org.springframework.transaction.annotation.Transactional;
 import ru.otus.spring.configs.AppProps;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
@@ -19,6 +21,7 @@ import ru.otus.spring.service.printers.BookPrinter;
 import ru.otus.spring.service.printers.GenrePrinter;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @ShellComponent
@@ -30,6 +33,9 @@ public class CLICommands {
     private static final String ROWS_DELETED = "rows-deleted";
     private static final String BOOK_CREATED = "book-created";
     private static final String NO_SUCH_BOOK = "no-such-book";
+    private static final String BOOK_SAVED = "book-saved";
+    private static final String BOOK_DELETED = "book-deleted";
+    private static final String BOOK_NOT_DELETED = "book-not-deleted";
     private static final String NO_SUCH_AUTHOR = "no-such-author";
     private static final String NO_SUCH_GENRE = "no-such-genre";
     private static final String NO_SUCH_BOOK_COMMENT = "no-such-book-comment";
@@ -69,20 +75,20 @@ public class CLICommands {
 
     @ShellMethod(value = "get list of all books", key = {"bl", "books-list"})
     public String getBook() {
-        List<Book> books = bookRepo.read();
+        List<Book> books = bookRepo.findAll();
         return bookPrinter.print(books);
     }
 
     @ShellMethod(value = "find book by ID", key = {"b", "find-book"})
     public String getBook(long id) {
-        var result = bookRepo.read(id);
+        var result = bookRepo.find(id);
         List<Book> toPrint = result.map(List::of).orElseGet(ArrayList::new);
         return bookPrinter.print(toPrint);
     }
 
     @ShellMethod(value = "find books by title", key = {"bt", "find-books-by-title"})
     public String getBook(String title) {
-        List<Book> books = bookRepo.read(title);
+        List<Book> books = bookRepo.find(title);
         return bookPrinter.print(books);
     }
 
@@ -113,7 +119,7 @@ public class CLICommands {
     @ShellMethod(value = "update book", key = {"bu", "book-update"})
     public String updateBook(long id) {
 
-        var existingBook = bookRepo.read(id);
+        var existingBook = bookRepo.find(id);
         if (existingBook.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
@@ -121,6 +127,7 @@ public class CLICommands {
         Book book = existingBook.get();
         String welcomeText = messageSource.getMessage(ENTER_BOOK_TITLE, null, appProps.locale());
         String title = cliValueProvider.getValue(welcomeText + " (" + book.getTitle() + "):");
+        book.setTitle(title);
 
         welcomeText = messageSource.getMessage(ENTER_AUTHOR_ID, null, appProps.locale());
         long authorId = Long.parseLong(cliValueProvider.getValue(welcomeText + " (" + book.getAuthor() + "):"));
@@ -128,6 +135,7 @@ public class CLICommands {
         if (existingAuthor.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
+        book.setAuthor(existingAuthor.get());
 
         welcomeText = messageSource.getMessage(ENTER_GENRE_ID, null, appProps.locale());
         long genreId = Long.parseLong(cliValueProvider.getValue(welcomeText + " (" + book.getGenre() + "):"));
@@ -135,33 +143,47 @@ public class CLICommands {
         if (existingGenre.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
+        book.setGenre(existingGenre.get());
 
-        int result = bookRepo.update(id, title, existingAuthor.get(), existingGenre.get());
-        return messageSource.getMessage(ROWS_CHANGED, new String[]{String.valueOf(result)}, appProps.locale());
+        Book savedBook = bookRepo.save(book);
+        return messageSource.getMessage(BOOK_SAVED, new String[]{"\"" + savedBook.getTitle() + "\""}, appProps.locale());
     }
 
     @ShellMethod(value = "delete book", key = {"bd", "book-delete"})
     public String deleteBook(long id) {
-        int result = bookRepo.delete(id);
-        return messageSource.getMessage(ROWS_DELETED, new String[]{String.valueOf(result)}, appProps.locale());
-    }
-
-    @ShellMethod(value = "list all comments of a specified book", key = {"bcl", "book-comments-list"})
-    public String listBookComments(long bookId) {
-
-        var existingBook = bookRepo.read(bookId);
+        var existingBook = bookRepo.find(id);
         if (existingBook.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
 
-        var bookComments = bookCommentRepo.read(existingBook.get());
+        String title = existingBook.get().getTitle();
+
+        bookRepo.remove(existingBook.get());
+
+        existingBook = bookRepo.find(id);
+        String messageId = BOOK_DELETED;
+        if (!existingBook.isEmpty()) {
+            messageId = BOOK_NOT_DELETED;
+        }
+
+        return messageSource.getMessage(messageId, new String[]{"\"" + title + "\""}, appProps.locale());
+    }
+
+    @ShellMethod(value = "list all comments of a specified book", key = {"bcl", "book-comments-list"})
+    public String listBookComments(long bookId) {
+        var existingBook = bookRepo.find(bookId);
+        if (existingBook.isEmpty()) {
+            return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
+        }
+
+        var bookComments = bookRepo.findComments(bookId);
         return bookCommentPrinter.print(bookComments);
     }
 
     @ShellMethod(value = "add comment for a specified book", key = {"bca", "book-comment-add"})
     public String addBookComment(long bookId) {
 
-        var existingBook = bookRepo.read(bookId);
+        var existingBook = bookRepo.find(bookId);
         if (existingBook.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
@@ -176,7 +198,7 @@ public class CLICommands {
     @ShellMethod(value = "update comment of specified book", key = {"bcu", "book-comment-update"})
     public String updateBookComment(long bookId) {
 
-        var existingBook = bookRepo.read(bookId);
+        var existingBook = bookRepo.find(bookId);
         if (existingBook.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
@@ -184,7 +206,7 @@ public class CLICommands {
 
         String welcomeText = messageSource.getMessage(ENTER_BOOK_COMMENT_ID, null, appProps.locale());
         long commentId = Long.parseLong(cliValueProvider.getValue(welcomeText));
-        var existingBookComment = bookCommentRepo.read(book, commentId);
+        var existingBookComment = bookCommentRepo.find(book, commentId);
         if (existingBookComment.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK_COMMENT, null, appProps.locale());
         }
@@ -200,7 +222,7 @@ public class CLICommands {
     @ShellMethod(value = "delete comment of specified book", key = {"bcd", "book-comment-delete"})
     public String deleteBookComment(long bookId) {
 
-        var existingBook = bookRepo.read(bookId);
+        var existingBook = bookRepo.find(bookId);
         if (existingBook.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
@@ -208,26 +230,26 @@ public class CLICommands {
 
         String welcomeText = messageSource.getMessage(ENTER_BOOK_COMMENT_ID, null, appProps.locale());
         long commentId = Long.parseLong(cliValueProvider.getValue(welcomeText));
-        var existingBookComment = bookCommentRepo.read(book, commentId);
+        var existingBookComment = bookCommentRepo.find(book, commentId);
         if (existingBookComment.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK_COMMENT, null, appProps.locale());
         }
         BookComment bookComment = existingBookComment.get();
 
-        Book result = bookCommentRepo.delete(book, bookComment);
+        Book result = bookCommentRepo.remove(book, bookComment);
         return messageSource.getMessage(ROW_CHANGED, new String[]{String.valueOf(result)}, appProps.locale());
     }
 
     @ShellMethod(value = "delete all comments of specified book", key = {"bcda", "book-comment-delete-all"})
     public String deleteAllBookComments(long bookId) {
 
-        var existingBook = bookRepo.read(bookId);
+        var existingBook = bookRepo.find(bookId);
         if (existingBook.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
         Book book = existingBook.get();
 
-        Book result = bookCommentRepo.deleteAll(book);
+        Book result = bookCommentRepo.removeAll(book);
         return messageSource.getMessage(ROW_CHANGED, new String[]{String.valueOf(result)}, appProps.locale());
     }
 }
