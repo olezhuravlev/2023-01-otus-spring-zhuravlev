@@ -13,6 +13,7 @@ import ru.otus.spring.model.Book;
 import ru.otus.spring.model.BookComment;
 import ru.otus.spring.model.Genre;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -95,13 +96,77 @@ public class BookRepoJpa implements BookRepo {
         entityManager.remove(toRemove);
     }
 
-    @Transactional
     @Override
-    public List<BookComment> findComments(long bookId) {
+    public List<BookComment> getComments(Book book) {
         HashMap<String, Object> properties = new HashMap<>();
-        properties.put(EntityGraph.EntityGraphType.FETCH.getKey(), entityManager.getEntityGraph("book-comments"));
-        Book bookAttached = entityManager.find(Book.class, bookId, properties);
+        properties.put(EntityGraph.EntityGraphType.FETCH.getKey(), entityManager.getEntityGraph("book-bookComments"));
+        Book bookAttached = entityManager.find(Book.class, book.getId(), properties);
         List<BookComment> bookComments = bookAttached.getBookComments();
         return bookComments;
+    }
+
+    @Override
+    public Optional<BookComment> getComment(Book book, long commentId) {
+        var query = entityManager.createQuery("""
+                SELECT bc FROM BookComment bc
+                WHERE bc.id=:comment_id AND bc.book=:book 
+                """, BookComment.class);
+
+        query.setParameter("book", book);
+        query.setParameter("comment_id", commentId);
+
+        BookComment bookComment = query.getSingleResult();
+
+        return Optional.ofNullable(bookComment);
+    }
+
+    @Transactional
+    @Override
+    public BookComment createComment(Book book, String text) {
+        BookComment bookComment = new BookComment(0L, text, book);
+        entityManager.persist(bookComment);
+        return bookComment;
+    }
+
+    @Transactional
+    @Override
+    public int updateComment(BookComment bookComment, String text) {
+        var query = entityManager.createQuery("""
+                UPDATE BookComment bc
+                SET bc.text=:text
+                WHERE bc.id=:comment_id AND bc.book=:book 
+                """);
+
+        query.setParameter("comment_id", bookComment.getId());
+        query.setParameter("book", bookComment.getBook());
+        query.setParameter("text", text);
+
+        return query.executeUpdate();
+    }
+
+    @Transactional
+    @Override
+    public int removeComment(BookComment bookComment) {
+        var query = entityManager.createQuery("""
+                DELETE FROM BookComment bc
+                WHERE bc.id=:comment_id AND bc.book=:book 
+                """);
+
+        query.setParameter("comment_id", bookComment.getId());
+        query.setParameter("book", bookComment.getBook());
+
+        return query.executeUpdate();
+    }
+
+    @Transactional
+    @Override
+    public int cleanComments(Book book) {
+        var query = entityManager.createQuery("""
+                DELETE FROM BookComment bc
+                WHERE bc.book=:book 
+                """);
+        query.setParameter("book", book);
+
+        return query.executeUpdate();
     }
 }

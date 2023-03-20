@@ -1,5 +1,6 @@
 package ru.otus.spring.model;
 
+import com.opencsv.bean.CsvBindAndJoinByName;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,4 +18,8 @@ public class BookComment {
 
     @Column(name = "text", nullable = false, unique = false)
     private String text;
+
+    @ManyToOne(targetEntity = Book.class, fetch = FetchType.LAZY)
+    @JoinColumn(name = "book_id", nullable = false)
+    private Book book;
 }

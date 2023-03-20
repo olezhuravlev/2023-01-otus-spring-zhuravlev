@@ -15,5 +15,11 @@ public interface BookRepo {
     Book create(String title, Author author, Genre genre);
     Book save(Book book);
     void remove(Book book);
-    List<BookComment> findComments(long bookId);
+
+    List<BookComment> getComments(Book book);
+    Optional<BookComment> getComment(Book book, long commentId);
+    BookComment createComment(Book book, String text);
+    int updateComment(BookComment bookComment, String text);
+    int removeComment(BookComment bookComment);
+    int cleanComments(Book book);
 }

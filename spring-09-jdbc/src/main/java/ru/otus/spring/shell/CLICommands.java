@@ -12,7 +12,7 @@ import ru.otus.spring.model.Book;
 import ru.otus.spring.model.BookComment;
 import ru.otus.spring.model.Genre;
 import ru.otus.spring.repositories.AuthorRepo;
-import ru.otus.spring.repositories.BookCommentRepo;
+//import ru.otus.spring.repositories.BookCommentRepo;
 import ru.otus.spring.repositories.BookRepo;
 import ru.otus.spring.repositories.GenreRepo;
 import ru.otus.spring.service.printers.AuthorPrinter;
@@ -21,6 +21,7 @@ import ru.otus.spring.service.printers.BookPrinter;
 import ru.otus.spring.service.printers.GenrePrinter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -42,6 +43,7 @@ public class CLICommands {
     private static final String ENTER_BOOK_TITLE = "enter-book-title";
     private static final String ENTER_BOOK_COMMENT_ID = "enter-book-comment-id";
     private static final String ENTER_BOOK_COMMENT_TEXT = "enter-book-comment-text";
+    private static final String BOOK_COMMENT_CREATED = "book-comment-created";
     private static final String ENTER_AUTHOR_ID = "enter-author-id";
     private static final String ENTER_GENRE_ID = "enter-genre-id";
 
@@ -50,7 +52,7 @@ public class CLICommands {
     private final AuthorRepo authorRepo;
     private final GenreRepo genreRepo;
     private final BookRepo bookRepo;
-    private final BookCommentRepo bookCommentRepo;
+    //private final BookCommentRepo bookCommentRepo;
 
     private final AuthorPrinter authorPrinter;
     private final GenrePrinter genrePrinter;
@@ -176,8 +178,22 @@ public class CLICommands {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
 
-        var bookComments = bookRepo.findComments(bookId);
+        var bookComments = bookRepo.getComments(existingBook.get());
         return bookCommentPrinter.print(bookComments);
+    }
+
+    @ShellMethod(value = "get specified comment of specified book", key = {"bc", "book-comments-list"})
+    public String listBookComment(long bookId) {
+        var existingBook = bookRepo.find(bookId);
+        if (existingBook.isEmpty()) {
+            return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
+        }
+
+        String welcomeText = messageSource.getMessage(ENTER_BOOK_COMMENT_ID, null, appProps.locale());
+        long commentId = Long.parseLong(cliValueProvider.getValue(welcomeText));
+        var existingBookComment = bookRepo.getComment(existingBook.get(), commentId);
+
+        return bookCommentPrinter.print(Arrays.asList(existingBookComment.get()));
     }
 
     @ShellMethod(value = "add comment for a specified book", key = {"bca", "book-comment-add"})
@@ -191,8 +207,8 @@ public class CLICommands {
 
         String welcomeText = messageSource.getMessage(ENTER_BOOK_COMMENT_TEXT, null, appProps.locale());
         String commentText = cliValueProvider.getValue(welcomeText);
-        BookComment result = bookCommentRepo.create(book, commentText);
-        return messageSource.getMessage(ROW_CHANGED, new String[]{String.valueOf(result)}, appProps.locale());
+        BookComment result = bookRepo.createComment(book, commentText);
+        return messageSource.getMessage(BOOK_COMMENT_CREATED, new String[]{"\"" + book.getTitle() + "\""}, appProps.locale());
     }
 
     @ShellMethod(value = "update comment of specified book", key = {"bcu", "book-comment-update"})
@@ -206,7 +222,7 @@ public class CLICommands {
 
         String welcomeText = messageSource.getMessage(ENTER_BOOK_COMMENT_ID, null, appProps.locale());
         long commentId = Long.parseLong(cliValueProvider.getValue(welcomeText));
-        var existingBookComment = bookCommentRepo.find(book, commentId);
+        var existingBookComment = bookRepo.getComment(book, commentId);
         if (existingBookComment.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK_COMMENT, null, appProps.locale());
         }
@@ -215,7 +231,7 @@ public class CLICommands {
         welcomeText = messageSource.getMessage(ENTER_BOOK_COMMENT_TEXT, null, appProps.locale());
         String commentText = cliValueProvider.getValue(welcomeText + "(\"" + bookComment.getText() + "\"):");
 
-        BookComment result = bookCommentRepo.update(book, bookComment, commentText);
+        int result = bookRepo.updateComment(bookComment, commentText);
         return messageSource.getMessage(ROW_CHANGED, new String[]{String.valueOf(result)}, appProps.locale());
     }
 
@@ -230,13 +246,13 @@ public class CLICommands {
 
         String welcomeText = messageSource.getMessage(ENTER_BOOK_COMMENT_ID, null, appProps.locale());
         long commentId = Long.parseLong(cliValueProvider.getValue(welcomeText));
-        var existingBookComment = bookCommentRepo.find(book, commentId);
+        var existingBookComment = bookRepo.getComment(book, commentId);
         if (existingBookComment.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK_COMMENT, null, appProps.locale());
         }
         BookComment bookComment = existingBookComment.get();
 
-        Book result = bookCommentRepo.remove(book, bookComment);
+        int result = bookRepo.removeComment(bookComment);
         return messageSource.getMessage(ROW_CHANGED, new String[]{String.valueOf(result)}, appProps.locale());
     }
 
@@ -249,7 +265,7 @@ public class CLICommands {
         }
         Book book = existingBook.get();
 
-        Book result = bookCommentRepo.removeAll(book);
+        int result = bookRepo.cleanComments(book);
         return messageSource.getMessage(ROW_CHANGED, new String[]{String.valueOf(result)}, appProps.locale());
     }
 }
