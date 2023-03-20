@@ -14,7 +14,7 @@ public interface BookRepo {
     List<Book> find(String title);
     Book create(String title, Author author, Genre genre);
     Book save(Book book);
-    void remove(Book book);
+    void delete(Book book);
 
     List<BookComment> getComments(Book book);
     Optional<BookComment> getComment(Book book, long commentId);

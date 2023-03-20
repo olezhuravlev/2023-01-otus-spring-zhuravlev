@@ -13,7 +13,6 @@ import ru.otus.spring.model.Book;
 import ru.otus.spring.model.BookComment;
 import ru.otus.spring.model.Genre;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -86,7 +85,7 @@ public class BookRepoJpa implements BookRepo {
 
     @Transactional
     @Override
-    public void remove(Book book) {
+    public void delete(Book book) {
         Book toRemove;
         if (!entityManager.contains(book)) {
             toRemove = entityManager.merge(book);
@@ -109,13 +108,17 @@ public class BookRepoJpa implements BookRepo {
     public Optional<BookComment> getComment(Book book, long commentId) {
         var query = entityManager.createQuery("""
                 SELECT bc FROM BookComment bc
-                WHERE bc.id=:comment_id AND bc.book=:book 
+                WHERE bc.id=:comment_id AND bc.bookId=:book_id 
                 """, BookComment.class);
 
-        query.setParameter("book", book);
+        query.setParameter("book_id", book.getId());
         query.setParameter("comment_id", commentId);
 
-        BookComment bookComment = query.getSingleResult();
+        BookComment bookComment = null;
+        List<BookComment> bookComments = query.getResultList();
+        if (!bookComments.isEmpty()) {
+            bookComment = bookComments.get(0);
+        }
 
         return Optional.ofNullable(bookComment);
     }
@@ -123,7 +126,7 @@ public class BookRepoJpa implements BookRepo {
     @Transactional
     @Override
     public BookComment createComment(Book book, String text) {
-        BookComment bookComment = new BookComment(0L, text, book);
+        BookComment bookComment = new BookComment(0L, text, book.getId());
         entityManager.persist(bookComment);
         return bookComment;
     }
@@ -134,11 +137,11 @@ public class BookRepoJpa implements BookRepo {
         var query = entityManager.createQuery("""
                 UPDATE BookComment bc
                 SET bc.text=:text
-                WHERE bc.id=:comment_id AND bc.book=:book 
+                WHERE bc.id=:comment_id AND bc.bookId=:book_id
                 """);
 
         query.setParameter("comment_id", bookComment.getId());
-        query.setParameter("book", bookComment.getBook());
+        query.setParameter("book_id", bookComment.getBookId());
         query.setParameter("text", text);
 
         return query.executeUpdate();
@@ -149,11 +152,11 @@ public class BookRepoJpa implements BookRepo {
     public int removeComment(BookComment bookComment) {
         var query = entityManager.createQuery("""
                 DELETE FROM BookComment bc
-                WHERE bc.id=:comment_id AND bc.book=:book 
+                WHERE bc.id=:comment_id AND bc.bookId=:book_id
                 """);
 
         query.setParameter("comment_id", bookComment.getId());
-        query.setParameter("book", bookComment.getBook());
+        query.setParameter("book_id", bookComment.getBookId());
 
         return query.executeUpdate();
     }
@@ -163,9 +166,9 @@ public class BookRepoJpa implements BookRepo {
     public int cleanComments(Book book) {
         var query = entityManager.createQuery("""
                 DELETE FROM BookComment bc
-                WHERE bc.book=:book 
+                WHERE bc.bookId=:book_id 
                 """);
-        query.setParameter("book", book);
+        query.setParameter("book_id", book.getId());
 
         return query.executeUpdate();
     }

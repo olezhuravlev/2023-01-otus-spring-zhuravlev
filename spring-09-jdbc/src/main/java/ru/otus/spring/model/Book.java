@@ -30,10 +30,6 @@ public class Book {
     @JoinColumn(name = "genre_id", nullable = false)
     private Genre genre;
 
-    //@OneToMany(targetEntity = BookComment.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    //@JoinColumn(name = "book_id", nullable = false)
-    //@OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    //@OneToMany(targetEntity = BookComment.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "bookId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<BookComment> bookComments;
 }

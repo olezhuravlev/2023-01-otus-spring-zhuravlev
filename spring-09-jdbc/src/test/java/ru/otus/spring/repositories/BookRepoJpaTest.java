@@ -14,6 +14,7 @@ import ru.otus.spring.model.BookComment;
 import ru.otus.spring.model.Genre;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,9 +46,9 @@ public class BookRepoJpaTest {
         EXPECTED_GENRES.add(new Genre(2, "Test genre 2"));
         EXPECTED_GENRES.add(new Genre(3, "Test genre 3"));
 
-        EXPECTED_COMMENTS.add(List.of(new BookComment(1, "Test book comment 1")));
-        EXPECTED_COMMENTS.add(List.of(new BookComment(2, "Test book comment 2")));
-        EXPECTED_COMMENTS.add(List.of(new BookComment(3, "Test book comment 3")));
+        EXPECTED_COMMENTS.add(List.of(new BookComment(1, "Test book comment 1", 1)));
+        EXPECTED_COMMENTS.add(List.of(new BookComment(2, "Test book comment 2", 2)));
+        EXPECTED_COMMENTS.add(List.of(new BookComment(3, "Test book comment 3", 3)));
 
         EXPECTED_BOOKS.add(new Book(1, "Test book 1", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), EXPECTED_COMMENTS.get(0)));
         EXPECTED_BOOKS.add(new Book(2, "Test book 2", EXPECTED_AUTHORS.get(1), EXPECTED_GENRES.get(1), EXPECTED_COMMENTS.get(1)));
@@ -56,14 +57,14 @@ public class BookRepoJpaTest {
 
     @DisplayName("Retrieve all books from DB")
     @Test
-    public void read() {
+    public void findAll() {
         List<Book> books = bookRepo.findAll();
         assertThat(books).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(EXPECTED_BOOKS);
     }
 
     @DisplayName("Retrieve book by ID")
     @Test
-    public void readById() {
+    public void findById() {
         Optional<Book> book = bookRepo.find(1);
         assertThat(book.get()).usingRecursiveComparison().isEqualTo(EXPECTED_BOOKS.get(0));
     }
@@ -78,25 +79,26 @@ public class BookRepoJpaTest {
     @DisplayName("Create book")
     @Test
     public void create() {
-        Book book = bookRepo.create("Test book 4", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0));
-        Optional<Book> existingBook = bookRepo.find(book.getId());
-        assertThat(existingBook.get()).usingRecursiveComparison().isEqualTo(book);
+        Book newBook = bookRepo.create("Test book 4", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0));
+        Optional<Book> existingBook = bookRepo.find(newBook.getId());
+        assertThat(existingBook.get()).usingRecursiveComparison().isEqualTo(newBook);
     }
 
-//    @DisplayName("Update book")
-//    @Test
-//    public void update() {
-//
-//        long bookId = 1;
-//        String bookTitle = "New test title";
-//
-//        int result = bookRepo.save(bookId, bookTitle, EXPECTED_AUTHORS.get(1), EXPECTED_GENRES.get(2));
-//        assertThat(result).isEqualTo(1);
-//
-//        Optional<Book> existingBook = bookRepo.read(bookId);
-//        Book exampleBook = new Book(bookId, bookTitle, EXPECTED_AUTHORS.get(1), EXPECTED_GENRES.get(2), EXPECTED_COMMENTS.get(0));
-//        assertThat(existingBook.get()).usingRecursiveComparison().isEqualTo(exampleBook);
-//    }
+    @DisplayName("Save updated book")
+    @Test
+    public void save() {
+
+        long bookId = 1;
+        String bookTitle = "New test title";
+
+        Optional<Book> existingBookBefore = bookRepo.find(bookId);
+        Book book = existingBookBefore.get();
+        book.setTitle(bookTitle);
+        bookRepo.save(book);
+
+        Optional<Book> existingBookAfter = bookRepo.find(bookId);
+        assertThat(existingBookAfter.get()).usingRecursiveComparison().isEqualTo(book);
+    }
 
     @DisplayName("Delete book")
     @Test
@@ -107,7 +109,7 @@ public class BookRepoJpaTest {
         Optional<Book> existingBookBefore = bookRepo.find(bookId);
         assertThat(existingBookBefore.get()).usingRecursiveComparison().isEqualTo(EXPECTED_BOOKS.get(0));
 
-        bookRepo.remove(existingBookBefore.get());
+        bookRepo.delete(existingBookBefore.get());
         Optional<Book> existingBookAfter = bookRepo.find(bookId);
         assertThat(existingBookAfter.isEmpty());
     }

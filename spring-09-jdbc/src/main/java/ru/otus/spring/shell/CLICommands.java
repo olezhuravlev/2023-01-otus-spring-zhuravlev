@@ -160,7 +160,7 @@ public class CLICommands {
 
         String title = existingBook.get().getTitle();
 
-        bookRepo.remove(existingBook.get());
+        bookRepo.delete(existingBook.get());
 
         existingBook = bookRepo.find(id);
         String messageId = BOOK_DELETED;
@@ -253,7 +253,7 @@ public class CLICommands {
         BookComment bookComment = existingBookComment.get();
 
         int result = bookRepo.removeComment(bookComment);
-        return messageSource.getMessage(ROW_CHANGED, new String[]{String.valueOf(result)}, appProps.locale());
+        return messageSource.getMessage(ROWS_DELETED, new String[]{String.valueOf(result)}, appProps.locale());
     }
 
     @ShellMethod(value = "delete all comments of specified book", key = {"bcda", "book-comment-delete-all"})
@@ -266,6 +266,6 @@ public class CLICommands {
         Book book = existingBook.get();
 
         int result = bookRepo.cleanComments(book);
-        return messageSource.getMessage(ROW_CHANGED, new String[]{String.valueOf(result)}, appProps.locale());
+        return messageSource.getMessage(ROWS_DELETED, new String[]{String.valueOf(result)}, appProps.locale());
     }
 }

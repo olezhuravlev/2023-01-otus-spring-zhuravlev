@@ -19,7 +19,6 @@ public class BookComment {
     @Column(name = "text", nullable = false, unique = false)
     private String text;
 
-    @ManyToOne(targetEntity = Book.class, fetch = FetchType.LAZY)
-    @JoinColumn(name = "book_id", nullable = false)
-    private Book book;
+    @Column(name = "book_id", nullable = false, unique = false)
+    private long bookId;
 }

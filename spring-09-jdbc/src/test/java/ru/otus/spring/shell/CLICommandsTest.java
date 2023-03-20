@@ -80,9 +80,9 @@ public class CLICommandsTest {
         EXPECTED_GENRES.add(new Genre(2, "Test genre 2"));
         EXPECTED_GENRES.add(new Genre(3, "Test genre 3"));
 
-        EXPECTED_COMMENTS.add(List.of(new BookComment(1, "Test book comment 1")));
-        EXPECTED_COMMENTS.add(List.of(new BookComment(2, "Test book comment 2")));
-        EXPECTED_COMMENTS.add(List.of(new BookComment(3, "Test book comment 3")));
+        EXPECTED_COMMENTS.add(List.of(new BookComment(1, "Test book comment 1", 1)));
+        EXPECTED_COMMENTS.add(List.of(new BookComment(2, "Test book comment 2", 2)));
+        EXPECTED_COMMENTS.add(List.of(new BookComment(3, "Test book comment 3", 3)));
 
         EXPECTED_BOOKS.add(new Book(1, "Test book 1", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), EXPECTED_COMMENTS.get(0)));
         EXPECTED_BOOKS.add(new Book(2, "Test book 2", EXPECTED_AUTHORS.get(1), EXPECTED_GENRES.get(1), EXPECTED_COMMENTS.get(1)));
