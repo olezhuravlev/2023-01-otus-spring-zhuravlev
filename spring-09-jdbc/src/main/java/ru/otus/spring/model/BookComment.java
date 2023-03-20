@@ -17,4 +17,7 @@ public class BookComment {
 
     @Column(name = "text", nullable = false, unique = false)
     private String text;
+
+    @Column(name = "book_id", nullable = false, unique = false)
+    private long bookId;
 }

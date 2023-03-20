@@ -17,14 +17,14 @@ public class AuthorRepoJpa implements AuthorRepo {
     private final EntityManager entityManager;
 
     @Override
-    public List<Author> read() {
+    public List<Author> find() {
         var query = entityManager.createQuery("SELECT a from Author a", Author.class);
         List<Author> resultList = query.getResultList();
         return resultList;
     }
 
     @Override
-    public Optional<Author> read(long id) {
+    public Optional<Author> find(long id) {
         Author result = entityManager.find(Author.class, id);
         return Optional.ofNullable(result);
     }

@@ -33,15 +33,15 @@ public class GenreRepoJpaTest {
 
     @DisplayName("Retrieve all genres from DB")
     @Test
-    public void read() {
-        List<Genre> genres = genreRepo.read();
+    public void find() {
+        List<Genre> genres = genreRepo.find();
         assertThat(genres).containsExactlyInAnyOrderElementsOf(EXPECTED_GENRES);
     }
 
     @DisplayName("Retrieve genre by ID")
     @Test
-    public void readById() {
-        Optional<Genre> genre = genreRepo.read(1L);
+    public void findById() {
+        Optional<Genre> genre = genreRepo.find(1L);
         assertThat(genre.get()).isEqualTo(EXPECTED_GENRES.get(0));
     }
 }
