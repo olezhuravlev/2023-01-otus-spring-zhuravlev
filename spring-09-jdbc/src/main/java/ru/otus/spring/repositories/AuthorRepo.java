@@ -6,6 +6,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AuthorRepo {
-    List<Author> read();
-    Optional<Author> read(long id);
+    List<Author> find();
+    Optional<Author> find(long id);
 }

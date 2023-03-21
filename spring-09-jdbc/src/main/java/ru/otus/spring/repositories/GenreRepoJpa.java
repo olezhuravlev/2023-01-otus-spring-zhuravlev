@@ -17,14 +17,14 @@ public class GenreRepoJpa implements GenreRepo {
     private final EntityManager entityManager;
 
     @Override
-    public List<Genre> read() {
+    public List<Genre> find() {
         var query = entityManager.createQuery("SELECT g from Genre g", Genre.class);
         List<Genre> resultList = query.getResultList();
         return resultList;
     }
 
     @Override
-    public Optional<Genre> read(long id) {
+    public Optional<Genre> find(long id) {
         Genre result = entityManager.find(Genre.class, id);
         return Optional.ofNullable(result);
     }

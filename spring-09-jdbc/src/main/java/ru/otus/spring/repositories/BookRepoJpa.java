@@ -149,7 +149,7 @@ public class BookRepoJpa implements BookRepo {
 
     @Transactional
     @Override
-    public int removeComment(BookComment bookComment) {
+    public int deleteComment(BookComment bookComment) {
         var query = entityManager.createQuery("""
                 DELETE FROM BookComment bc
                 WHERE bc.id=:comment_id AND bc.bookId=:book_id
@@ -163,7 +163,7 @@ public class BookRepoJpa implements BookRepo {
 
     @Transactional
     @Override
-    public int cleanComments(Book book) {
+    public int deleteComments(Book book) {
         var query = entityManager.createQuery("""
                 DELETE FROM BookComment bc
                 WHERE bc.bookId=:book_id 

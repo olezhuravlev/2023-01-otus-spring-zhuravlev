@@ -20,6 +20,6 @@ public interface BookRepo {
     Optional<BookComment> getComment(Book book, long commentId);
     BookComment createComment(Book book, String text);
     int updateComment(BookComment bookComment, String text);
-    int removeComment(BookComment bookComment);
-    int cleanComments(Book book);
+    int deleteComment(BookComment bookComment);
+    int deleteComments(Book book);
 }

@@ -14,7 +14,6 @@ import ru.otus.spring.model.BookComment;
 import ru.otus.spring.model.Genre;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,7 +70,7 @@ public class BookRepoJpaTest {
 
     @DisplayName("Retrieve book by title")
     @Test
-    public void readByTitle() {
+    public void findByTitle() {
         List<Book> book = bookRepo.find("book");
         assertThat(book).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(EXPECTED_BOOKS);
     }
@@ -112,5 +111,84 @@ public class BookRepoJpaTest {
         bookRepo.delete(existingBookBefore.get());
         Optional<Book> existingBookAfter = bookRepo.find(bookId);
         assertThat(existingBookAfter.isEmpty());
+    }
+
+    @DisplayName("Get book comments")
+    @Test
+    public void getBookComments() {
+        List<BookComment> bookComments = bookRepo.getComments(EXPECTED_BOOKS.get(0));
+        assertThat(bookComments).usingRecursiveComparison().isEqualTo(EXPECTED_COMMENTS.get(0));
+    }
+
+    @DisplayName("Get certain book comment")
+    @Test
+    public void getBookComment() {
+        Optional<BookComment> bookComment = bookRepo.getComment(EXPECTED_BOOKS.get(0), 1);
+        assertThat(bookComment.get()).usingRecursiveComparison().isEqualTo(EXPECTED_COMMENTS.get(0).get(0));
+    }
+
+    @DisplayName("Create book comment")
+    @Test
+    public void createBookComment() {
+
+        long bookId = 1;
+        String text = "Test book comment 4";
+
+        Book book = bookRepo.find(bookId).get();
+        BookComment bookCommentNew = bookRepo.createComment(book, text);
+
+        entityManager.clear();
+
+        Optional<BookComment> bookCommentStored = bookRepo.getComment(book, bookCommentNew.getId());
+        assertThat(bookCommentStored.get()).usingRecursiveComparison().isEqualTo(bookCommentNew);
+    }
+
+    @DisplayName("Update book comment")
+    @Test
+    public void updateBookComment() {
+
+        long bookId = 1;
+        String text = "Test book comment 4";
+
+        Book book = bookRepo.find(bookId).get();
+        BookComment bookComment = bookRepo.getComment(book, bookId).get();
+        bookComment.setText(text);
+        bookRepo.updateComment(bookComment, text);
+
+        entityManager.clear();
+
+        BookComment bookCommentAfter = bookRepo.getComment(book, bookId).get();
+        assertThat(bookCommentAfter).usingRecursiveComparison().isEqualTo(bookComment);
+    }
+
+    @DisplayName("Delete book comment")
+    @Test
+    public void deleteBookComment() {
+
+        long bookId = 1;
+
+        Book book = bookRepo.find(bookId).get();
+        BookComment bookComment = bookRepo.getComment(book, bookId).get();
+        bookRepo.deleteComment(bookComment);
+
+        entityManager.clear();
+
+        Optional<BookComment> savedBookComment = bookRepo.getComment(book, bookComment.getId());
+        assertThat(savedBookComment.isEmpty());
+    }
+
+    @DisplayName("Delete all book comments")
+    @Test
+    public void deleteAllBookComments() {
+
+        long bookId = 1;
+
+        Book book = bookRepo.find(bookId).get();
+        bookRepo.deleteComments(book);
+
+        entityManager.clear();
+
+        Book savedBook = bookRepo.find(bookId).get();
+        assertThat(savedBook.getBookComments().isEmpty());
     }
 }

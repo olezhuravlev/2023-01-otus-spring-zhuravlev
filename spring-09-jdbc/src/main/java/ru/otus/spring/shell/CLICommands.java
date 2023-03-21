@@ -2,17 +2,14 @@ package ru.otus.spring.shell;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.MessageSource;
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
-import org.springframework.transaction.annotation.Transactional;
 import ru.otus.spring.configs.AppProps;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
 import ru.otus.spring.model.BookComment;
 import ru.otus.spring.model.Genre;
 import ru.otus.spring.repositories.AuthorRepo;
-//import ru.otus.spring.repositories.BookCommentRepo;
 import ru.otus.spring.repositories.BookRepo;
 import ru.otus.spring.repositories.GenreRepo;
 import ru.otus.spring.service.printers.AuthorPrinter;
@@ -22,7 +19,6 @@ import ru.otus.spring.service.printers.GenrePrinter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 @ShellComponent
@@ -30,7 +26,6 @@ import java.util.List;
 public class CLICommands {
 
     private static final String ROW_CHANGED = "row-changed";
-    private static final String ROWS_CHANGED = "rows-changed";
     private static final String ROWS_DELETED = "rows-deleted";
     private static final String BOOK_CREATED = "book-created";
     private static final String NO_SUCH_BOOK = "no-such-book";
@@ -52,7 +47,6 @@ public class CLICommands {
     private final AuthorRepo authorRepo;
     private final GenreRepo genreRepo;
     private final BookRepo bookRepo;
-    //private final BookCommentRepo bookCommentRepo;
 
     private final AuthorPrinter authorPrinter;
     private final GenrePrinter genrePrinter;
@@ -65,13 +59,13 @@ public class CLICommands {
 
     @ShellMethod(value = "get list of all authors", key = {"al", "authors-list"})
     public String getAuthors() {
-        List<Author> authors = authorRepo.read();
+        List<Author> authors = authorRepo.find();
         return authorPrinter.print(authors);
     }
 
     @ShellMethod(value = "get list of all genres", key = {"gl", "genres-list"})
     public String getGenres() {
-        List<Genre> genres = genreRepo.read();
+        List<Genre> genres = genreRepo.find();
         return genrePrinter.print(genres);
     }
 
@@ -102,14 +96,14 @@ public class CLICommands {
 
         welcomeText = messageSource.getMessage(ENTER_AUTHOR_ID, null, appProps.locale());
         long authorId = Long.parseLong(cliValueProvider.getValue(welcomeText));
-        var existingAuthor = authorRepo.read(authorId);
+        var existingAuthor = authorRepo.find(authorId);
         if (existingAuthor.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_AUTHOR, null, appProps.locale());
         }
 
         welcomeText = messageSource.getMessage(ENTER_GENRE_ID, null, appProps.locale());
         long genreId = Long.parseLong(cliValueProvider.getValue(welcomeText));
-        var existingGenre = genreRepo.read(genreId);
+        var existingGenre = genreRepo.find(genreId);
         if (existingGenre.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_GENRE, null, appProps.locale());
         }
@@ -133,7 +127,7 @@ public class CLICommands {
 
         welcomeText = messageSource.getMessage(ENTER_AUTHOR_ID, null, appProps.locale());
         long authorId = Long.parseLong(cliValueProvider.getValue(welcomeText + " (" + book.getAuthor() + "):"));
-        var existingAuthor = authorRepo.read(authorId);
+        var existingAuthor = authorRepo.find(authorId);
         if (existingAuthor.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
@@ -141,7 +135,7 @@ public class CLICommands {
 
         welcomeText = messageSource.getMessage(ENTER_GENRE_ID, null, appProps.locale());
         long genreId = Long.parseLong(cliValueProvider.getValue(welcomeText + " (" + book.getGenre() + "):"));
-        var existingGenre = genreRepo.read(genreId);
+        var existingGenre = genreRepo.find(genreId);
         if (existingGenre.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
@@ -252,7 +246,7 @@ public class CLICommands {
         }
         BookComment bookComment = existingBookComment.get();
 
-        int result = bookRepo.removeComment(bookComment);
+        int result = bookRepo.deleteComment(bookComment);
         return messageSource.getMessage(ROWS_DELETED, new String[]{String.valueOf(result)}, appProps.locale());
     }
 
@@ -265,7 +259,7 @@ public class CLICommands {
         }
         Book book = existingBook.get();
 
-        int result = bookRepo.cleanComments(book);
+        int result = bookRepo.deleteComments(book);
         return messageSource.getMessage(ROWS_DELETED, new String[]{String.valueOf(result)}, appProps.locale());
     }
 }

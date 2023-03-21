@@ -33,15 +33,15 @@ public class AuthorRepoJpaTest {
 
     @DisplayName("Retrieve all authors from DB")
     @Test
-    public void read() {
-        List<Author> authors = authorRepo.read();
+    public void find() {
+        List<Author> authors = authorRepo.find();
         assertThat(authors).containsExactlyInAnyOrderElementsOf(EXPECTED_AUTHORS);
     }
 
     @DisplayName("Retrieve author by ID")
     @Test
-    public void readById() {
-        Optional<Author> author = authorRepo.read(1L);
+    public void findById() {
+        Optional<Author> author = authorRepo.find(1L);
         assertThat(author.get()).isEqualTo(EXPECTED_AUTHORS.get(0));
     }
 }

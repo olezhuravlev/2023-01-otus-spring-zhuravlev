@@ -92,7 +92,7 @@ public class CLICommandsTest {
     @DisplayName("Get list of all authors")
     @Test
     public void getAuthors() {
-        Mockito.when(authorRepo.read()).thenReturn(EXPECTED_AUTHORS);
+        Mockito.when(authorRepo.find()).thenReturn(EXPECTED_AUTHORS);
         String result = cliCommands.getAuthors();
         assertEquals("""
                 |------|----------------------------------------|
@@ -108,7 +108,7 @@ public class CLICommandsTest {
     @DisplayName("Get list of all genres")
     @Test
     public void getGenres() {
-        Mockito.when(genreRepo.read()).thenReturn(EXPECTED_GENRES);
+        Mockito.when(genreRepo.find()).thenReturn(EXPECTED_GENRES);
         String result = cliCommands.getGenres();
         assertEquals("""
                 |-----|----------------------------------------|
@@ -196,14 +196,14 @@ public class CLICommandsTest {
                 .thenReturn("2");
 
         ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-        Mockito.when(authorRepo.read(longCaptor.capture())).thenAnswer((Answer<Optional<Author>>) invocation -> {
+        Mockito.when(authorRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Author>>) invocation -> {
             Object[] args = invocation.getArguments();
             Long arg = (Long) args[0];
             int idx = arg.intValue() - 1;
             return Optional.ofNullable(EXPECTED_AUTHORS.get(idx));
         });
 
-        Mockito.when(genreRepo.read(longCaptor.capture())).thenAnswer((Answer<Optional<Genre>>) invocation -> {
+        Mockito.when(genreRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Genre>>) invocation -> {
             Object[] args = invocation.getArguments();
             Long arg = (Long) args[0];
             int idx = arg.intValue() - 1;
