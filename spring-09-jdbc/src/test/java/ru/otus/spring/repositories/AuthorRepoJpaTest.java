@@ -34,14 +34,14 @@ public class AuthorRepoJpaTest {
     @DisplayName("Retrieve all authors from DB")
     @Test
     public void find() {
-        List<Author> authors = authorRepo.find();
+        List<Author> authors = authorRepo.findAll();
         assertThat(authors).containsExactlyInAnyOrderElementsOf(EXPECTED_AUTHORS);
     }
 
     @DisplayName("Retrieve author by ID")
     @Test
     public void findById() {
-        Optional<Author> author = authorRepo.find(1L);
+        Optional<Author> author = authorRepo.findById(1L);
         assertThat(author.get()).isEqualTo(EXPECTED_AUTHORS.get(0));
     }
 }

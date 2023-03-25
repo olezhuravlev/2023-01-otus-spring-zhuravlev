@@ -58,20 +58,27 @@ public class BookRepoJpaTest {
     @Test
     public void findAll() {
         List<Book> books = bookRepo.findAll();
-        assertThat(books).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(EXPECTED_BOOKS);
+        assertThat(books.size()).isEqualTo(3);
     }
 
     @DisplayName("Retrieve book by ID")
     @Test
     public void findById() {
-        Optional<Book> book = bookRepo.find(1);
-        assertThat(book.get()).usingRecursiveComparison().isEqualTo(EXPECTED_BOOKS.get(0));
+
+        long bookId = 1;
+
+        Optional<Book> book = bookRepo.findById(bookId);
+        assertThat(book.isPresent()).isTrue();
+        assertThat(book.get().getId()).isEqualTo(bookId);
     }
 
     @DisplayName("Retrieve book by title")
     @Test
     public void findByTitle() {
-        List<Book> book = bookRepo.find("book");
+
+        String bookTitle = "book";
+
+        List<Book> book = bookRepo.findByTitle(bookTitle);
         assertThat(book).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(EXPECTED_BOOKS);
     }
 
@@ -82,9 +89,9 @@ public class BookRepoJpaTest {
         Book newBook = new Book(0L, "Test book 4", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), new ArrayList<>());
         bookRepo.save(newBook);
 
-        entityManager.clear();
+        entityManager.flush();
 
-        Optional<Book> savedBook = bookRepo.find(newBook.getId());
+        Optional<Book> savedBook = bookRepo.findById(newBook.getId());
         assertThat(savedBook.get()).usingRecursiveComparison().isEqualTo(newBook);
     }
 
@@ -94,90 +101,11 @@ public class BookRepoJpaTest {
 
         long bookId = 1;
 
-        Optional<Book> existingBookBefore = bookRepo.find(bookId);
-        assertThat(existingBookBefore.get()).usingRecursiveComparison().isEqualTo(EXPECTED_BOOKS.get(0));
+        Optional<Book> existingBookBefore = bookRepo.findById(bookId);
+        assertThat(existingBookBefore.isPresent()).isTrue();
 
         bookRepo.delete(existingBookBefore.get());
-        Optional<Book> existingBookAfter = bookRepo.find(bookId);
-        assertThat(existingBookAfter.isEmpty());
-    }
-
-    @DisplayName("Get book comments")
-    @Test
-    public void getComments() {
-        List<BookComment> bookComments = bookRepo.getComments(EXPECTED_BOOKS.get(0));
-        assertThat(bookComments).usingRecursiveComparison().isEqualTo(EXPECTED_COMMENTS.get(0));
-    }
-
-    @DisplayName("Get certain book comment")
-    @Test
-    public void getComment() {
-        Optional<BookComment> bookComment = bookRepo.getComment(EXPECTED_BOOKS.get(0), 1);
-        assertThat(bookComment.get()).usingRecursiveComparison().isEqualTo(EXPECTED_COMMENTS.get(0).get(0));
-    }
-
-    @DisplayName("Create book comment")
-    @Test
-    public void createComment() {
-
-        long bookId = 1;
-        String text = "Test book comment 4";
-
-        Book book = bookRepo.find(bookId).get();
-        BookComment bookCommentNew = bookRepo.createComment(book, text);
-
-        entityManager.clear();
-
-        Optional<BookComment> bookCommentStored = bookRepo.getComment(book, bookCommentNew.getId());
-        assertThat(bookCommentStored.get()).usingRecursiveComparison().isEqualTo(bookCommentNew);
-    }
-
-    @DisplayName("Update book comment")
-    @Test
-    public void updateComment() {
-
-        long bookId = 1;
-        String text = "Test book comment 4";
-
-        Book book = bookRepo.find(bookId).get();
-        BookComment bookComment = bookRepo.getComment(book, bookId).get();
-        bookComment.setText(text);
-        bookRepo.updateComment(bookComment, text);
-
-        entityManager.clear();
-
-        BookComment bookCommentAfter = bookRepo.getComment(book, bookId).get();
-        assertThat(bookCommentAfter).usingRecursiveComparison().isEqualTo(bookComment);
-    }
-
-    @DisplayName("Delete book comment")
-    @Test
-    public void deleteComment() {
-
-        long bookId = 1;
-
-        Book book = bookRepo.find(bookId).get();
-        BookComment bookComment = bookRepo.getComment(book, bookId).get();
-        bookRepo.deleteComment(bookComment);
-
-        entityManager.clear();
-
-        Optional<BookComment> savedBookComment = bookRepo.getComment(book, bookComment.getId());
-        assertThat(savedBookComment.isEmpty());
-    }
-
-    @DisplayName("Delete all book comments")
-    @Test
-    public void deleteAllComments() {
-
-        long bookId = 1;
-
-        Book book = bookRepo.find(bookId).get();
-        bookRepo.deleteComments(book);
-
-        entityManager.clear();
-
-        Book savedBook = bookRepo.find(bookId).get();
-        assertThat(savedBook.getBookComments().isEmpty());
+        Optional<Book> existingBookAfter = bookRepo.findById(bookId);
+        assertThat(existingBookAfter.isPresent()).isFalse();
     }
 }

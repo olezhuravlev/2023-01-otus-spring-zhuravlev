@@ -19,9 +19,10 @@ import ru.otus.spring.model.Book;
 import ru.otus.spring.model.BookComment;
 import ru.otus.spring.model.Genre;
 import ru.otus.spring.repositories.AuthorRepo;
+import ru.otus.spring.repositories.BookCommentRepo;
 import ru.otus.spring.repositories.BookRepo;
 import ru.otus.spring.repositories.GenreRepo;
-import ru.otus.spring.service.Facade;
+import ru.otus.spring.service.ApiGate;
 import ru.otus.spring.service.printers.AuthorPrinter;
 import ru.otus.spring.service.printers.BookCommentPrinter;
 import ru.otus.spring.service.printers.BookPrinter;
@@ -36,7 +37,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 @DisplayName("CLI test")
 @DataJpaTest
-@Import(value = {AppConfig.class, CLICommands.class, Facade.class, AuthorPrinter.class, GenrePrinter.class, BookPrinter.class, BookCommentPrinter.class, PrintProps.class})
+@Import(value = {AppConfig.class, CLICommands.class, ApiGate.class, AuthorPrinter.class, GenrePrinter.class, BookPrinter.class, BookCommentPrinter.class, PrintProps.class})
 public class CLICommandsTest {
 
     @MockBean
@@ -47,6 +48,9 @@ public class CLICommandsTest {
 
     @MockBean
     private BookRepo bookRepo;
+
+    @MockBean
+    private BookCommentRepo bookCommentRepo;
 
     @MockBean
     private AppProps appProps;
@@ -94,7 +98,7 @@ public class CLICommandsTest {
     @DisplayName("Get list of all authors")
     @Test
     public void getAuthorsList() {
-        Mockito.when(authorRepo.find()).thenReturn(EXPECTED_AUTHORS);
+        Mockito.when(authorRepo.findAll()).thenReturn(EXPECTED_AUTHORS);
         String result = cliCommands.getAuthorsList();
         assertEquals("""
                 |------|----------------------------------------|
@@ -110,7 +114,7 @@ public class CLICommandsTest {
     @DisplayName("Get list of all genres")
     @Test
     public void getGenresList() {
-        Mockito.when(genreRepo.find()).thenReturn(EXPECTED_GENRES);
+        Mockito.when(genreRepo.findAll()).thenReturn(EXPECTED_GENRES);
         String result = cliCommands.getGenresList();
         assertEquals("""
                 |-----|----------------------------------------|
@@ -147,7 +151,7 @@ public class CLICommandsTest {
         long bookId = 1L;
 
         ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-        Mockito.when(bookRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
+        Mockito.when(bookRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
             Object[] args = invocation.getArguments();
             Long arg = (Long) args[0];
             int idx = arg.intValue() - 1;
@@ -171,7 +175,7 @@ public class CLICommandsTest {
         String bookTitle = "book";
 
         ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        Mockito.when(bookRepo.find(stringCaptor.capture())).thenAnswer((Answer<List<Book>>) invocation -> {
+        Mockito.when(bookRepo.findByTitle(stringCaptor.capture())).thenAnswer((Answer<List<Book>>) invocation -> {
             Object[] args = invocation.getArguments();
             String arg = (String) args[0];
             return EXPECTED_BOOKS.stream().filter(book -> book.getTitle().contains(arg)).toList();
@@ -193,8 +197,10 @@ public class CLICommandsTest {
     @Test
     public void addBook() {
 
+        String bookTitle = "Dummy book";
+
         Mockito.when(cliValueProvider.getValue(Mockito.anyString()))
-                .thenReturn("Dummy book")
+                .thenReturn(bookTitle)
                 .thenReturn("1")
                 .thenReturn("2");
 
@@ -206,14 +212,14 @@ public class CLICommandsTest {
         });
 
         ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-        Mockito.when(authorRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Author>>) invocation -> {
+        Mockito.when(authorRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Author>>) invocation -> {
             Object[] args = invocation.getArguments();
             Long arg = (Long) args[0];
             int idx = arg.intValue() - 1;
             return Optional.ofNullable(EXPECTED_AUTHORS.get(idx));
         });
 
-        Mockito.when(genreRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Genre>>) invocation -> {
+        Mockito.when(genreRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Genre>>) invocation -> {
             Object[] args = invocation.getArguments();
             Long arg = (Long) args[0];
             int idx = arg.intValue() - 1;
@@ -221,7 +227,7 @@ public class CLICommandsTest {
         });
 
         cliCommands.addBook();
-        Mockito.verify(bookRepo, Mockito.times(1)).save(new Book(0L, "Dummy book", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(1), new ArrayList<>()));
+        Mockito.verify(bookRepo, Mockito.times(1)).save(new Book(0L, bookTitle, EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(1), new ArrayList<>()));
     }
 
     @DisplayName("Update book identified by ID")
@@ -229,28 +235,29 @@ public class CLICommandsTest {
     public void updateBookById() {
 
         long bookId = 1L;
+        String bookTitle = "Test book";
 
         Mockito.when(cliValueProvider.getValue(Mockito.anyString()))
-                .thenReturn("Dummy book")
+                .thenReturn(bookTitle)
                 .thenReturn("1")
                 .thenReturn("2");
 
         ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-        Mockito.when(bookRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
+        Mockito.when(bookRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
             Object[] args = invocation.getArguments();
             Long arg = (Long) args[0];
             int idx = arg.intValue() - 1;
             return Optional.ofNullable(EXPECTED_BOOKS.get(idx));
         });
 
-        Mockito.when(authorRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Author>>) invocation -> {
+        Mockito.when(authorRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Author>>) invocation -> {
             Object[] args = invocation.getArguments();
             Long arg = (Long) args[0];
             int idx = arg.intValue() - 1;
             return Optional.ofNullable(EXPECTED_AUTHORS.get(idx));
         });
 
-        Mockito.when(genreRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Genre>>) invocation -> {
+        Mockito.when(genreRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Genre>>) invocation -> {
             Object[] args = invocation.getArguments();
             Long arg = (Long) args[0];
             int idx = arg.intValue() - 1;
@@ -265,7 +272,7 @@ public class CLICommandsTest {
         });
 
         cliCommands.updateBook(bookId);
-        Mockito.verify(bookRepo, Mockito.times(1)).save(new Book(bookId, "Dummy book", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(1), EXPECTED_COMMENTS.get(0)));
+        Mockito.verify(bookRepo, Mockito.times(1)).save(new Book(bookId, bookTitle, EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(1), EXPECTED_COMMENTS.get(0)));
     }
 
     @DisplayName("Delete book by ID")
@@ -273,7 +280,7 @@ public class CLICommandsTest {
     public void deleteBookById() {
 
         ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-        Mockito.when(bookRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
+        Mockito.when(bookRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
             Object[] args = invocation.getArguments();
             Long arg = (Long) args[0];
             int idx = arg.intValue() - 1;
@@ -284,66 +291,21 @@ public class CLICommandsTest {
         Mockito.verify(bookRepo, Mockito.times(1)).delete(any(Book.class));
     }
 
-    @DisplayName("List comments of specified book")
-    @Test
-    public void listBookComments() {
-
-        long bookId = 1L;
-
-        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-        Mockito.when(bookRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
-            Object[] args = invocation.getArguments();
-            Long arg = (Long) args[0];
-            int idx = arg.intValue() - 1;
-            return Optional.ofNullable(EXPECTED_BOOKS.get(idx));
-        });
-
-        ArgumentCaptor<Book> bookCaptor = ArgumentCaptor.forClass(Book.class);
-        Mockito.when(bookRepo.getComments(bookCaptor.capture())).thenAnswer((Answer<List<BookComment>>) invocation -> {
-            Object[] args = invocation.getArguments();
-            Book book = (Book) args[0];
-            int idx = (int) book.getId() - 1;
-            return EXPECTED_COMMENTS.get(idx);
-        });
-
-        String result = cliCommands.listBookComments(bookId);
-        assertEquals("""
-                |----------|----------------------------------------------------------------------|
-                |COMMENT ID|COMMENT TEXT                                                          |
-                |----------|----------------------------------------------------------------------|
-                |1         |Test book comment 1                                                   |
-                |----------|----------------------------------------------------------------------|
-                """, result);
-    }
-
-    @DisplayName("List specified comment of specified book")
+    @DisplayName("List book comment found by ID")
     @Test
     public void listBookComment() {
 
-        long bookId = 1L;
-
-        Mockito.when(cliValueProvider.getValue(Mockito.anyString())).thenReturn("1");
+        long bookCommentId = 1L;
 
         ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-        Mockito.when(bookRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
+        Mockito.when(bookCommentRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<BookComment>>) invocation -> {
             Object[] args = invocation.getArguments();
             Long arg = (Long) args[0];
             int idx = arg.intValue() - 1;
-            return Optional.ofNullable(EXPECTED_BOOKS.get(idx));
+            return Optional.ofNullable(EXPECTED_COMMENTS.get(idx).get(0));
         });
 
-        ArgumentCaptor<Book> bookCaptor = ArgumentCaptor.forClass(Book.class);
-        Mockito.when(bookRepo.getComment(bookCaptor.capture(), longCaptor.capture())).thenAnswer((Answer<Optional<BookComment>>) invocation -> {
-            Object[] args = invocation.getArguments();
-            Book book = (Book) args[0];
-            Long commentID = (Long) args[1];
-            int bookIdx = (int) book.getId() - 1;
-            int commentIdx = commentID.intValue() - 1;
-
-            return Optional.ofNullable(EXPECTED_BOOKS.get(bookIdx).getBookComments().get(commentIdx));
-        });
-
-        String result = cliCommands.listBookComment(bookId);
+        String result = cliCommands.findBookCommentById(bookCommentId);
         assertEquals("""
                 |----------|----------------------------------------------------------------------|
                 |COMMENT ID|COMMENT TEXT                                                          |
@@ -353,93 +315,50 @@ public class CLICommandsTest {
                 """, result);
     }
 
-    @DisplayName("Add comment to specified book")
+    @DisplayName("Add a comment to specified book")
     @Test
     public void addBookComment() {
 
         long bookId = 1L;
-        String text = "Dummy comment";
+        String text = "Test comment";
 
         Mockito.when(cliValueProvider.getValue(Mockito.anyString())).thenReturn(text);
-
-        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-        Mockito.when(bookRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
-            Object[] args = invocation.getArguments();
-            int idx = ((Long) args[0]).intValue() - 1;
-            return Optional.ofNullable(EXPECTED_BOOKS.get(idx));
-        });
+        Mockito.when(bookRepo.isBookExist(bookId)).thenAnswer((Answer<Boolean>) invocation -> true);
 
         cliCommands.addBookComment(bookId);
-        Mockito.verify(bookRepo, Mockito.times(1)).createComment(EXPECTED_BOOKS.get((int) bookId - 1), text);
+        Mockito.verify(bookCommentRepo, Mockito.times(1)).save(any(BookComment.class));
     }
 
-    @DisplayName("Update specified comment of specified book")
+    @DisplayName("Update specified book comment")
     @Test
     public void updateBookComment() {
 
-        long bookId = 1L;
         long commentId = 1L;
-        String text = "Dummy comment";
+        String text = "Test comment";
 
-        Mockito.when(cliValueProvider.getValue(Mockito.anyString()))
-                .thenReturn(String.valueOf(commentId))
-                .thenReturn(text);
-
-        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-        Mockito.when(bookRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
+        Mockito.when(cliValueProvider.getValue(Mockito.anyString())).thenReturn(text);
+        Mockito.when(bookCommentRepo.findById(commentId)).thenAnswer((Answer<Optional<BookComment>>) invocation -> {
             Object[] args = invocation.getArguments();
-            int idx = ((Long) args[0]).intValue() - 1;
-            return Optional.ofNullable(EXPECTED_BOOKS.get(idx));
-        });
-
-        ArgumentCaptor<Book> bookCaptor = ArgumentCaptor.forClass(Book.class);
-        Mockito.when(bookRepo.getComment(bookCaptor.capture(), longCaptor.capture())).thenAnswer((Answer<Optional<BookComment>>) invocation -> {
-            Object[] args = invocation.getArguments();
-            Book book = (Book) args[0];
-            Long commentID = (Long) args[1];
+            Long commentID = (Long) args[0];
             int commentIdx = commentID.intValue() - 1;
-            List<BookComment> bookComments = book.getBookComments();
-            return Optional.ofNullable(bookComments.get(commentIdx));
+            return Optional.ofNullable(EXPECTED_COMMENTS.get(commentIdx).get(0));
         });
 
-        Book expectedBook = EXPECTED_BOOKS.get((int) bookId - 1);
-        BookComment expectedBookComment = expectedBook.getBookComments().get((int) commentId - 1);
-
-        cliCommands.updateBookComment(bookId);
-        Mockito.verify(bookRepo, Mockito.times(1)).updateComment(expectedBookComment, text);
+        cliCommands.updateBookComment(commentId);
+        Mockito.verify(bookCommentRepo, Mockito.times(1)).save(any(BookComment.class));
     }
 
-    @DisplayName("Delete specified comment from specified book")
+    @DisplayName("Delete specified book comment")
     @Test
     public void deleteBookComment() {
 
-        long bookId = 1L;
         long commentId = 1L;
 
         Mockito.when(cliValueProvider.getValue(Mockito.anyString())).thenReturn(String.valueOf(commentId));
+        Mockito.when(bookCommentRepo.isBookCommentExist(commentId)).thenAnswer((Answer<Boolean>) invocation -> true);
 
-        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-        Mockito.when(bookRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
-            Object[] args = invocation.getArguments();
-            int idx = ((Long) args[0]).intValue() - 1;
-            return Optional.ofNullable(EXPECTED_BOOKS.get(idx));
-        });
-
-        ArgumentCaptor<Book> bookCaptor = ArgumentCaptor.forClass(Book.class);
-        Mockito.when(bookRepo.getComment(bookCaptor.capture(), longCaptor.capture())).thenAnswer((Answer<Optional<BookComment>>) invocation -> {
-            Object[] args = invocation.getArguments();
-            Book book = (Book) args[0];
-            Long commentID = (Long) args[1];
-            int commentIdx = commentID.intValue() - 1;
-            List<BookComment> bookComments = book.getBookComments();
-            return Optional.ofNullable(bookComments.get(commentIdx));
-        });
-
-        Book expectedBook = EXPECTED_BOOKS.get((int) bookId - 1);
-        BookComment expectedBookComment = expectedBook.getBookComments().get((int) commentId - 1);
-
-        cliCommands.deleteBookComment(bookId);
-        Mockito.verify(bookRepo, Mockito.times(1)).deleteComment(expectedBookComment);
+        cliCommands.deleteBookComment(commentId);
+        Mockito.verify(bookCommentRepo, Mockito.times(1)).deleteCommentById(commentId);
     }
 
     @DisplayName("Delete all comments of specified book")
@@ -448,16 +367,9 @@ public class CLICommandsTest {
 
         long bookId = 1L;
 
-        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
-        Mockito.when(bookRepo.find(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
-            Object[] args = invocation.getArguments();
-            int idx = ((Long) args[0]).intValue() - 1;
-            return Optional.ofNullable(EXPECTED_BOOKS.get(idx));
-        });
-
-        Book expectedBook = EXPECTED_BOOKS.get((int) bookId - 1);
+        Mockito.when(bookRepo.isBookExist(bookId)).thenAnswer((Answer<Boolean>) invocation -> true);
 
         cliCommands.deleteAllBookComments(bookId);
-        Mockito.verify(bookRepo, Mockito.times(1)).deleteComments(expectedBook);
+        Mockito.verify(bookCommentRepo, Mockito.times(1)).deleteCommentsByBookId(bookId);
     }
 }
