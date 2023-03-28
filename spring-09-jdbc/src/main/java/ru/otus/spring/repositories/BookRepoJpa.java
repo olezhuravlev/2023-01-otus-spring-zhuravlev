@@ -4,12 +4,12 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 import org.springframework.stereotype.Repository;
 import ru.otus.spring.configs.AppProps;
-import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
-import ru.otus.spring.model.Genre;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,14 +24,24 @@ public class BookRepoJpa implements BookRepo {
     private AppProps appProps;
 
     @Override
-    public List<Book> findAll() {
+    public List<Book> findAllWithAuthorAndGenre() {
         var query = entityManager.createQuery("SELECT b FROM Book b", Book.class);
-        return query.getResultList();
+        query.setHint(EntityGraphType.FETCH.getKey(), entityManager.getEntityGraph("book-author-genre"));
+        List<Book> resultList = query.getResultList();
+        return resultList;
     }
 
     @Override
     public Optional<Book> findById(long id) {
         Book result = entityManager.find(Book.class, id);
+        return Optional.ofNullable(result);
+    }
+
+    @Override
+    public Optional<Book> findByIdWithAuthorAndGenre(long id) {
+        HashMap<String, Object> properties = new HashMap<>();
+        properties.put(EntityGraphType.FETCH.getKey(), entityManager.getEntityGraph("book-author-genre"));
+        Book result = entityManager.find(Book.class, id, properties);
         return Optional.ofNullable(result);
     }
 
@@ -57,14 +67,7 @@ public class BookRepoJpa implements BookRepo {
 
     @Override
     public Book save(Book book) {
-
         if (book.getId() <= 0) {
-            Author author = book.getAuthor();
-            Author persistentAuthor = entityManager.merge(author);
-            book.setAuthor(persistentAuthor);
-            Genre genre = book.getGenre();
-            Genre persistentGenre = entityManager.merge(genre);
-            book.setGenre(persistentGenre);
             entityManager.persist(book);
             return book;
         } else {

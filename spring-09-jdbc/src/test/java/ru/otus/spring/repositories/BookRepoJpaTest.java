@@ -56,9 +56,9 @@ public class BookRepoJpaTest {
 
     @DisplayName("Retrieve all books from DB")
     @Test
-    public void findAll() {
-        List<Book> books = bookRepo.findAll();
-        assertThat(books.size()).isEqualTo(3);
+    public void findAllWithAuthorAndGenre() {
+        List<Book> books = bookRepo.findAllWithAuthorAndGenre();
+        assertThat(books).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(EXPECTED_BOOKS);
     }
 
     @DisplayName("Retrieve book by ID")
@@ -86,7 +86,12 @@ public class BookRepoJpaTest {
     @Test
     public void save() {
 
-        Book newBook = new Book(0L, "Test book 4", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), new ArrayList<>());
+        Author author = EXPECTED_AUTHORS.get(0);
+        Author persistentAuthor = entityManager.merge(author);
+        Genre genre = EXPECTED_GENRES.get(0);
+        Genre persistentGenre = entityManager.merge(genre);
+        Book newBook = new Book(0L, "Test book 4", persistentAuthor, persistentGenre, new ArrayList<>());
+
         bookRepo.save(newBook);
 
         entityManager.flush();
