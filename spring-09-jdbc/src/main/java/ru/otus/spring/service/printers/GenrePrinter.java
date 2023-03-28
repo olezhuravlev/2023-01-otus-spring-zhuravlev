@@ -15,10 +15,9 @@ public class GenrePrinter extends AbstractStringPrinter<Genre> {
     }
 
     @Override
-    protected void printRows(List<Genre> genres, StringBuilder stringBuilder) {
+    protected void printRows(List<Genre> genres, StringBuilder stringBuilder, Map<String, Map<String, String>> columns) {
         for (Genre genre : genres) {
             Map<String, String> values = Map.of("id", String.valueOf(genre.getId()), "name", genre.getName());
-            Map<String, Map<String, String>> columns = printProps.getColumns(getKey());
             stringBuilder.append(printValues(values, columns));
         }
     }

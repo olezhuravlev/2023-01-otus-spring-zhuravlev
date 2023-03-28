@@ -11,7 +11,7 @@ public abstract class AbstractStringPrinter<T> implements StringPrinter<T> {
     @Autowired
     protected PrintProps printProps;
 
-    protected abstract void printRows(List<T> models, StringBuilder stringBuilder);
+    protected abstract void printRows(List<T> models, StringBuilder stringBuilder, Map<String, Map<String, String>> columns);
     protected abstract String getKey();
 
     @Override
@@ -24,7 +24,7 @@ public abstract class AbstractStringPrinter<T> implements StringPrinter<T> {
                 .append(printDelimiter(columns))
                 .append(printHeaders(columns))
                 .append(printDelimiter(columns));
-        printRows(models, stringBuilder);
+        printRows(models, stringBuilder, columns);
         stringBuilder.append(printDelimiter(columns));
         return stringBuilder.toString();
     }

@@ -1,7 +1,9 @@
 package ru.otus.spring.service.printers;
 
 import org.springframework.stereotype.Service;
+import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
+import ru.otus.spring.model.Genre;
 
 import java.util.List;
 import java.util.Map;
@@ -15,10 +17,11 @@ public class BookPrinter extends AbstractStringPrinter<Book> {
     }
 
     @Override
-    protected void printRows(List<Book> books, StringBuilder stringBuilder) {
+    protected void printRows(List<Book> books, StringBuilder stringBuilder, Map<String, Map<String, String>> columns) {
         for (Book book : books) {
-            Map<String, String> values = Map.of("id", String.valueOf(book.getId()), "title", book.getTitle(), "author", book.getAuthor(), "genre", book.getGenre());
-            Map<String, Map<String, String>> columns = printProps.getColumns(getKey());
+            Author author = book.getAuthor();
+            Genre genre = book.getGenre();
+            Map<String, String> values = Map.of("id", String.valueOf(book.getId()), "title", book.getTitle(), "author", author.getName(), "genre", genre.getName());
             stringBuilder.append(printValues(values, columns));
         }
     }
