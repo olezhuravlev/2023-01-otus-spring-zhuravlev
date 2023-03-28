@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
 import ru.otus.spring.model.BookComment;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,19 +17,7 @@ public class BookCommentRepoJpa implements BookCommentRepo {
 
     @Override
     public Optional<BookComment> findById(long commentId) {
-
-        var query = entityManager.createQuery("""
-                SELECT bc FROM BookComment bc
-                WHERE bc.id=:commentId
-                """, BookComment.class);
-        query.setParameter("commentId", commentId);
-
-        BookComment bookComment = null;
-        List<BookComment> bookComments = query.getResultList();
-        if (!bookComments.isEmpty()) {
-            bookComment = bookComments.get(0);
-        }
-
+        BookComment bookComment = entityManager.find(BookComment.class, commentId);
         return Optional.ofNullable(bookComment);
     }
 

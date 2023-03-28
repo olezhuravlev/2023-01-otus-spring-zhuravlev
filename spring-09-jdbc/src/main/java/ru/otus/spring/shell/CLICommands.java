@@ -16,7 +16,6 @@ import ru.otus.spring.service.printers.BookPrinter;
 import ru.otus.spring.service.printers.GenrePrinter;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @ShellComponent
@@ -65,13 +64,13 @@ public class CLICommands {
 
     @ShellMethod(value = "get list of all books", key = {"bl", "books-list"})
     public String getBooksList() {
-        List<Book> books = apiGate.getBooks();
+        List<Book> books = apiGate.getBooksWithAuthorAndGenre();
         return bookPrinter.print(books);
     }
 
     @ShellMethod(value = "find book by ID", key = {"b", "book-find"})
-    public String findBookById(long id) {
-        var result = apiGate.getBookById(id);
+    public String findBookByIdWithAuthorAndGenre(long id) {
+        var result = apiGate.getBookByIdWithAuthorAndGenre(id);
         List<Book> toPrint = result.map(List::of).orElseGet(ArrayList::new);
         return bookPrinter.print(toPrint);
     }
@@ -109,7 +108,7 @@ public class CLICommands {
     @ShellMethod(value = "update book", key = {"bu", "book-update"})
     public String updateBook(long id) {
 
-        var existingBook = apiGate.getBookById(id);
+        var existingBook = apiGate.getBookByIdWithAuthorAndGenre(id);
         if (existingBook.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
@@ -173,7 +172,7 @@ public class CLICommands {
             return messageSource.getMessage(NO_SUCH_BOOK_COMMENT, null, appProps.locale());
         }
 
-        return bookCommentPrinter.print(Arrays.asList(existingBookComment.get()));
+        return bookCommentPrinter.print(List.of(existingBookComment.get()));
     }
 
     @ShellMethod(value = "add a comment to specified book", key = {"bca", "book-comment-add"})
