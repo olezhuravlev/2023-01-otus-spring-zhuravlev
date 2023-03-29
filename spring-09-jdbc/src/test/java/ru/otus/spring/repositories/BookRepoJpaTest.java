@@ -21,11 +21,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("JPA for Books")
 @DataJpaTest
-@Import({ApplicationConfig.class, BookRepoJpa.class})
+@Import({ApplicationConfig.class})
 public class BookRepoJpaTest {
 
     @Autowired
+    private AuthorRepo authorRepo;
+
+    @Autowired
+    private GenreRepo genreRepo;
+
+    @Autowired
     private BookRepo bookRepo;
+
+    @Autowired
+    private BookRepoEager bookRepoEager;
 
     @Autowired
     private TestEntityManager entityManager;
@@ -57,7 +66,7 @@ public class BookRepoJpaTest {
     @DisplayName("Retrieve all books from DB")
     @Test
     public void findAllWithAuthorAndGenre() {
-        List<Book> books = bookRepo.findAllWithAuthorAndGenre();
+        List<Book> books = bookRepoEager.findAll();
         assertThat(books).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(EXPECTED_BOOKS);
     }
 
@@ -78,7 +87,7 @@ public class BookRepoJpaTest {
 
         String bookTitle = "book";
 
-        List<Book> book = bookRepo.findByTitle(bookTitle);
+        List<Book> book = bookRepoEager.findByTitleContainingIgnoreCase(bookTitle);
         assertThat(book).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(EXPECTED_BOOKS);
     }
 
@@ -87,10 +96,12 @@ public class BookRepoJpaTest {
     public void save() {
 
         Author author = EXPECTED_AUTHORS.get(0);
-        Author persistentAuthor = entityManager.merge(author);
+        var persistentAuthor = authorRepo.findById(author.getId());
+
         Genre genre = EXPECTED_GENRES.get(0);
-        Genre persistentGenre = entityManager.merge(genre);
-        Book newBook = new Book(0L, "Test book 4", persistentAuthor, persistentGenre, new ArrayList<>());
+        var persistentGenre = genreRepo.findById(genre.getId());
+
+        Book newBook = new Book(0L, "Test book 4", persistentAuthor.get(), persistentGenre.get(), new ArrayList<>());
 
         bookRepo.save(newBook);
 

@@ -1,13 +1,8 @@
 package ru.otus.spring.repositories;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import ru.otus.spring.model.BookComment;
 
-import java.util.Optional;
-
-public interface BookCommentRepo {
-    Optional<BookComment> findById(long commentId);
-    boolean isBookCommentExist(long commentId);
-    BookComment save(BookComment bookComment);
-    void deleteCommentById(long commentId);
-    int deleteCommentsByBookId(long bookId);
+public interface BookCommentRepo extends JpaRepository<BookComment, Long> {
+    int deleteByBookId(long bookId);
 }
