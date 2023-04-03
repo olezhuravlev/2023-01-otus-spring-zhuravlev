@@ -5,7 +5,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
 import ru.otus.spring.model.Genre;
 
 import java.util.ArrayList;
@@ -16,7 +15,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("JPA for Genres")
 @DataJpaTest
-@Import({GenreRepoJpa.class})
 public class GenreRepoJpaTest {
 
     @Autowired

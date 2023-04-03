@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("JPA for Books")
 @DataJpaTest
-@Import({ApplicationConfig.class, BookCommentRepoJpa.class})
+@Import({ApplicationConfig.class})
 public class BookCommentRepoJpaTest {
 
     @Autowired
@@ -107,7 +107,7 @@ public class BookCommentRepoJpaTest {
         Optional<BookComment> existingBookComment = bookCommentRepo.findById(bookCommentId);
         assertThat(existingBookComment.isPresent()).isTrue();
 
-        bookCommentRepo.deleteCommentById(bookCommentId);
+        bookCommentRepo.deleteById(bookCommentId);
 
         entityManager.flush();
 
@@ -115,21 +115,18 @@ public class BookCommentRepoJpaTest {
         assertThat(deletedBookComment.isEmpty()).isTrue();
     }
 
-//    @DisplayName("Delete all book comments")
-//    @Test
-//    public void deleteComments() {
-//
-//        long bookId = 1;
-//
-//        List<BookComment> bookComments = bookCommentRepo.getCommentsByBookId(bookId);
-//        assertThat(bookComments).usingRecursiveComparison().isEqualTo(EXPECTED_COMMENTS.get(0));
-//
-//        int result = bookCommentRepo.deleteCommentsByBookId(bookId);
-//        assertThat(result).isEqualTo(bookComments.size());
-//
-//        entityManager.flush();
-//
-//        List<BookComment> deletedBookComments = bookCommentRepo.getCommentsByBookId(bookId);
-//        assertThat(deletedBookComments.isEmpty()).isTrue();
-//    }
+    @DisplayName("Delete all book comments")
+    @Test
+    public void deleteComments() {
+
+        long bookId = 1;
+
+        List<BookComment> bookComments = bookCommentRepo.findAll();
+        int initialSize = bookComments.size();
+        int result = bookCommentRepo.deleteByBookId(bookId);
+        assertThat(result).isEqualTo(1);
+
+        bookComments = bookCommentRepo.findAll();
+        assertThat(bookComments.size()).isEqualTo(initialSize - 1);
+    }
 }

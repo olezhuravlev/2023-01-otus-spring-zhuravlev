@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ApiGate {
-
     List<Author> getAuthors();
     Optional<Author> getAuthor(long id);
     List<Genre> getGenres();
