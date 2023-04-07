@@ -1,46 +1,46 @@
 package ru.otus.spring.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "books")
+@Document(collection = "books")
 public class Book {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
 
-    @Column(name = "title", nullable = false)
+    @Id
+    private String id;
+
     private String title;
 
-    @ManyToOne(targetEntity = Author.class, cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    @JoinColumn(name = "author_id", nullable = false)
+    @DBRef
     private Author author;
 
-    @ManyToOne(targetEntity = Genre.class, cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    @JoinColumn(name = "genre_id", nullable = false)
+    @DBRef
     private Genre genre;
 
-    @Fetch(FetchMode.SUBSELECT)
-    @OneToMany(mappedBy = "bookId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @DBRef
     private List<BookComment> bookComments;
+
+    @PersistenceCreator
+    public Book(String title, Author author, Genre genre, List<BookComment> bookComments) {
+        this.title = title;
+        this.author = author;
+        this.genre = genre;
+        this.bookComments = bookComments;
+    }
+
+    public void addBookComment(BookComment bookComment) {
+        bookComments.add(bookComment);
+    }
+
+    public void deleteBookComment(String bookCommentId) {
+        bookComments.removeIf(bookComment -> bookComment.getId().toString().equals(bookCommentId));
+    }
 }

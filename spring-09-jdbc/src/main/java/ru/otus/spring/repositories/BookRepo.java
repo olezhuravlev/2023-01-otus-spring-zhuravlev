@@ -1,7 +1,10 @@
 package ru.otus.spring.repositories;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import ru.otus.spring.model.Book;
 
-public interface BookRepo extends JpaRepository<Book, Long> {
+import java.util.List;
+
+public interface BookRepo extends MongoRepository<Book, String> {
+    List<Book> findByTitleContainingIgnoreCase(String title);
 }
