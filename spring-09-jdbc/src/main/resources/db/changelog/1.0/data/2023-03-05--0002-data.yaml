@@ -1,0 +1,43 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2023-03-05--0003-authors
+      author: olezhuravlev
+      context: test
+      runOnChange: true
+      loadUpdateData:
+        primaryKey: id
+        file: 2023-03-05--0003-authors.csv
+        relativeToChangelogFile: true
+        separator: ;
+        quotChar: '"'
+        seperator: ';'
+        encoding: UTF-8
+        tableName: authors
+  - changeSet:
+      id: 2023-03-05--0004-genres
+      author: olezhuravlev
+      context: test
+      runOnChange: true
+      loadUpdateData:
+        primaryKey: id
+        file: 2023-03-05--0004-genres.csv
+        relativeToChangelogFile: true
+        separator: ;
+        quotChar: '"'
+        seperator: ';'
+        encoding: UTF-8
+        tableName: genres
+  - changeSet:
+      id: 2023-03-05--0005-books
+      author: olezhuravlev
+      context: test
+      runOnChange: true
+      loadUpdateData:
+        primaryKey: id
+        file: 2023-03-05--0005-books.csv
+        relativeToChangelogFile: true
+        separator: ;
+        quotChar: '"'
+        seperator: ';'
+        encoding: UTF-8
+        tableName: books

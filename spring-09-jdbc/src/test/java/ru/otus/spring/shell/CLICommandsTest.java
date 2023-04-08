@@ -1,6 +1,5 @@
 package ru.otus.spring.shell;
 
-import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,11 +8,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.context.annotation.Import;
 import ru.otus.spring.configs.AppConfig;
+import ru.otus.spring.configs.AppProps;
+import ru.otus.spring.configs.PrintProps;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
 import ru.otus.spring.model.BookComment;
@@ -21,6 +21,7 @@ import ru.otus.spring.model.Genre;
 import ru.otus.spring.repositories.AuthorRepo;
 import ru.otus.spring.repositories.BookCommentRepo;
 import ru.otus.spring.repositories.BookRepo;
+import ru.otus.spring.repositories.BookRepoEager;
 import ru.otus.spring.repositories.GenreRepo;
 import ru.otus.spring.service.ApiGateImpl;
 import ru.otus.spring.service.printers.AuthorPrinter;
@@ -36,8 +37,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 
 @DisplayName("CLI test")
-@DataMongoTest
-@ContextConfiguration(classes = {AppConfig.class, CLICommands.class, ApiGateImpl.class, CLIValueProvider.class, AuthorPrinter.class, GenrePrinter.class, BookPrinter.class, BookCommentPrinter.class})
+@DataJpaTest
+@Import(value = {AppConfig.class, CLICommands.class, ApiGateImpl.class, AuthorPrinter.class, GenrePrinter.class, BookPrinter.class, BookCommentPrinter.class, PrintProps.class})
 public class CLICommandsTest {
 
     @MockBean
@@ -50,52 +51,52 @@ public class CLICommandsTest {
     private BookRepo bookRepo;
 
     @MockBean
+    private BookRepoEager bookRepoEager;
+
+    @MockBean
     private BookCommentRepo bookCommentRepo;
+
+    @MockBean
+    private AppProps appProps;
 
     @MockBean
     private CLIValueProvider cliValueProvider;
 
     @Autowired
+    private PrintProps printProps;
+
+    @Autowired
     @InjectMocks
     private CLICommands cliCommands;
 
+    private static final List<Book> EXPECTED_BOOKS = new ArrayList<>();
     private static final List<Author> EXPECTED_AUTHORS = new ArrayList<>();
     private static final List<Genre> EXPECTED_GENRES = new ArrayList<>();
-    private static final List<BookComment> EXPECTED_COMMENTS = new ArrayList<>();
-    private static final List<Book> EXPECTED_BOOKS = new ArrayList<>();
+    private static final List<List<BookComment>> EXPECTED_COMMENTS = new ArrayList<>();
 
     @BeforeEach
-    public void beforeEach() {
+    public void before() {
 
         EXPECTED_AUTHORS.clear();
         EXPECTED_GENRES.clear();
         EXPECTED_COMMENTS.clear();
         EXPECTED_BOOKS.clear();
 
-        EXPECTED_AUTHORS.add(new Author("a1", "Test author 1"));
-        EXPECTED_AUTHORS.add(new Author("a2", "Test author 2"));
-        EXPECTED_AUTHORS.add(new Author("a3", "Test author 3"));
+        EXPECTED_AUTHORS.add(new Author(1, "Test author 1"));
+        EXPECTED_AUTHORS.add(new Author(2, "Test author 2"));
+        EXPECTED_AUTHORS.add(new Author(3, "Test author 3"));
 
-        EXPECTED_GENRES.add(new Genre("g1", "Test genre 1"));
-        EXPECTED_GENRES.add(new Genre("g2", "Test genre 2"));
-        EXPECTED_GENRES.add(new Genre("g3", "Test genre 3"));
+        EXPECTED_GENRES.add(new Genre(1, "Test genre 1"));
+        EXPECTED_GENRES.add(new Genre(2, "Test genre 2"));
+        EXPECTED_GENRES.add(new Genre(3, "Test genre 3"));
 
-        EXPECTED_COMMENTS.add(new BookComment(new ObjectId("bc1111111111111111111111"), "Test book comment 1", "b1"));
-        EXPECTED_COMMENTS.add(new BookComment(new ObjectId("bc2222222222222222222222"), "Test book comment 2", "b2"));
-        EXPECTED_COMMENTS.add(new BookComment(new ObjectId("bc3333333333333333333333"), "Test book comment 3", "b3"));
+        EXPECTED_COMMENTS.add(List.of(new BookComment(1, "Test book comment 1", 1)));
+        EXPECTED_COMMENTS.add(List.of(new BookComment(2, "Test book comment 2", 2)));
+        EXPECTED_COMMENTS.add(List.of(new BookComment(3, "Test book comment 3", 3)));
 
-        // Comments must be modifiable!
-        List<BookComment> comments1 = new ArrayList<>();
-        comments1.add(EXPECTED_COMMENTS.get(0));
-        EXPECTED_BOOKS.add(new Book("b1", "Test book 1", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), comments1));
-
-        List<BookComment> comments2 = new ArrayList<>();
-        comments2.add(EXPECTED_COMMENTS.get(1));
-        EXPECTED_BOOKS.add(new Book("b2", "Test book 2", EXPECTED_AUTHORS.get(1), EXPECTED_GENRES.get(1), comments2));
-
-        List<BookComment> comments3 = new ArrayList<>();
-        comments3.add(EXPECTED_COMMENTS.get(2));
-        EXPECTED_BOOKS.add(new Book("b3", "Test book 3", EXPECTED_AUTHORS.get(2), EXPECTED_GENRES.get(2), comments3));
+        EXPECTED_BOOKS.add(new Book(1, "Test book 1", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), EXPECTED_COMMENTS.get(0)));
+        EXPECTED_BOOKS.add(new Book(2, "Test book 2", EXPECTED_AUTHORS.get(1), EXPECTED_GENRES.get(1), EXPECTED_COMMENTS.get(1)));
+        EXPECTED_BOOKS.add(new Book(3, "Test book 3", EXPECTED_AUTHORS.get(2), EXPECTED_GENRES.get(2), EXPECTED_COMMENTS.get(2)));
     }
 
     @DisplayName("Get list of all authors")
@@ -103,16 +104,15 @@ public class CLICommandsTest {
     public void getAuthorsList() {
 
         Mockito.when(authorRepo.findAll()).thenReturn(EXPECTED_AUTHORS);
-
         String result = cliCommands.getAuthorsList();
         assertEquals("""
-                |------------------------|----------------------------------------|
-                |AUTHOR ID               |NAME                                    |
-                |------------------------|----------------------------------------|
-                |a1                      |Test author 1                           |
-                |a2                      |Test author 2                           |
-                |a3                      |Test author 3                           |
-                |------------------------|----------------------------------------|
+                |------|----------------------------------------|
+                |AUTHOR|NAME                                    |
+                |------|----------------------------------------|
+                |1     |Test author 1                           |
+                |2     |Test author 2                           |
+                |3     |Test author 3                           |
+                |------|----------------------------------------|
                 """, result);
     }
 
@@ -121,16 +121,15 @@ public class CLICommandsTest {
     public void getGenresList() {
 
         Mockito.when(genreRepo.findAll()).thenReturn(EXPECTED_GENRES);
-
         String result = cliCommands.getGenresList();
         assertEquals("""
-                |------------------------|----------------------------------------|
-                |GENRE ID                |NAME                                    |
-                |------------------------|----------------------------------------|
-                |g1                      |Test genre 1                            |
-                |g2                      |Test genre 2                            |
-                |g3                      |Test genre 3                            |
-                |------------------------|----------------------------------------|
+                |-----|----------------------------------------|
+                |GENRE|NAME                                    |
+                |-----|----------------------------------------|
+                |1    |Test genre 1                            |
+                |2    |Test genre 2                            |
+                |3    |Test genre 3                            |
+                |-----|----------------------------------------|
                 """, result);
     }
 
@@ -138,41 +137,40 @@ public class CLICommandsTest {
     @Test
     public void getBooksList() {
 
-        Mockito.when(bookRepo.findAll()).thenReturn(EXPECTED_BOOKS);
-
+        Mockito.when(bookRepoEager.findAll()).thenReturn(EXPECTED_BOOKS);
         String result = cliCommands.getBooksList();
         assertEquals("""
-                |------------------------|----------------------------------------|------------------------------|---------------|
-                |BOOK ID                 |TITLE                                   |AUTHOR                        |GENRE          |
-                |------------------------|----------------------------------------|------------------------------|---------------|
-                |b1                      |Test book 1                             |Test author 1                 |Test genre 1   |
-                |b2                      |Test book 2                             |Test author 2                 |Test genre 2   |
-                |b3                      |Test book 3                             |Test author 3                 |Test genre 3   |
-                |------------------------|----------------------------------------|------------------------------|---------------|
+                |-------|----------------------------------------|------------------------------|---------------|
+                |BOOK ID|TITLE                                   |AUTHOR                        |GENRE          |
+                |-------|----------------------------------------|------------------------------|---------------|
+                |1      |Test book 1                             |Test author 1                 |Test genre 1   |
+                |2      |Test book 2                             |Test author 2                 |Test genre 2   |
+                |3      |Test book 3                             |Test author 3                 |Test genre 3   |
+                |-------|----------------------------------------|------------------------------|---------------|
                 """, result);
     }
 
-    @DisplayName("Get book by ID")
+    @DisplayName("Find book by ID with Author and Genre")
     @Test
-    public void getBookById() {
+    public void findBookByIdWithAuthorAndGenre() {
 
-        String bookId = "b1";
+        long bookId = 1L;
 
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        Mockito.when(bookRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
+        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
+        Mockito.when(bookRepoEager.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
             Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<Book> found = EXPECTED_BOOKS.stream().filter(book -> book.getId().equals(arg)).findFirst();
-            return found;
+            Long arg = (Long) args[0];
+            int idx = arg.intValue() - 1;
+            return Optional.ofNullable(EXPECTED_BOOKS.get(idx));
         });
 
-        String result = cliCommands.getBookById(bookId);
+        String result = cliCommands.findBookByIdWithAuthorAndGenre(bookId);
         assertEquals("""
-                |------------------------|----------------------------------------|------------------------------|---------------|
-                |BOOK ID                 |TITLE                                   |AUTHOR                        |GENRE          |
-                |------------------------|----------------------------------------|------------------------------|---------------|
-                |b1                      |Test book 1                             |Test author 1                 |Test genre 1   |
-                |------------------------|----------------------------------------|------------------------------|---------------|
+                |-------|----------------------------------------|------------------------------|---------------|
+                |BOOK ID|TITLE                                   |AUTHOR                        |GENRE          |
+                |-------|----------------------------------------|------------------------------|---------------|
+                |1      |Test book 1                             |Test author 1                 |Test genre 1   |
+                |-------|----------------------------------------|------------------------------|---------------|
                 """, result);
     }
 
@@ -183,22 +181,21 @@ public class CLICommandsTest {
         String bookTitle = "book";
 
         ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        Mockito.when(bookRepo.findByTitleContainingIgnoreCase(stringCaptor.capture())).thenAnswer((Answer<List<Book>>) invocation -> {
+        Mockito.when(bookRepoEager.findByTitleContainingIgnoreCase(stringCaptor.capture())).thenAnswer((Answer<List<Book>>) invocation -> {
             Object[] args = invocation.getArguments();
             String arg = (String) args[0];
-            List<Book> found = EXPECTED_BOOKS.stream().filter(book -> book.getTitle().contains(arg)).toList();
-            return found;
+            return EXPECTED_BOOKS.stream().filter(book -> book.getTitle().contains(arg)).toList();
         });
 
         String result = cliCommands.findBooksByTitle(bookTitle);
         assertEquals("""
-                |------------------------|----------------------------------------|------------------------------|---------------|
-                |BOOK ID                 |TITLE                                   |AUTHOR                        |GENRE          |
-                |------------------------|----------------------------------------|------------------------------|---------------|
-                |b1                      |Test book 1                             |Test author 1                 |Test genre 1   |
-                |b2                      |Test book 2                             |Test author 2                 |Test genre 2   |
-                |b3                      |Test book 3                             |Test author 3                 |Test genre 3   |
-                |------------------------|----------------------------------------|------------------------------|---------------|
+                |-------|----------------------------------------|------------------------------|---------------|
+                |BOOK ID|TITLE                                   |AUTHOR                        |GENRE          |
+                |-------|----------------------------------------|------------------------------|---------------|
+                |1      |Test book 1                             |Test author 1                 |Test genre 1   |
+                |2      |Test book 2                             |Test author 2                 |Test genre 2   |
+                |3      |Test book 3                             |Test author 3                 |Test genre 3   |
+                |-------|----------------------------------------|------------------------------|---------------|
                 """, result);
     }
 
@@ -210,8 +207,8 @@ public class CLICommandsTest {
 
         Mockito.when(cliValueProvider.getValue(Mockito.anyString()))
                 .thenReturn(bookTitle)
-                .thenReturn("a1")
-                .thenReturn("g2");
+                .thenReturn("1")
+                .thenReturn("2");
 
         ArgumentCaptor<Book> bookCaptor = ArgumentCaptor.forClass(Book.class);
         Mockito.when(bookRepo.save(bookCaptor.capture())).thenAnswer((Answer<Book>) invocation -> {
@@ -220,57 +217,57 @@ public class CLICommandsTest {
             return book;
         });
 
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        Mockito.when(authorRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<Author>>) invocation -> {
+        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
+        Mockito.when(authorRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Author>>) invocation -> {
             Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<Author> found = EXPECTED_AUTHORS.stream().filter(book -> book.getId().contains(arg)).findFirst();
-            return found;
+            Long arg = (Long) args[0];
+            int idx = arg.intValue() - 1;
+            return Optional.ofNullable(EXPECTED_AUTHORS.get(idx));
         });
 
-        Mockito.when(genreRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<Genre>>) invocation -> {
+        Mockito.when(genreRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Genre>>) invocation -> {
             Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<Genre> found = EXPECTED_GENRES.stream().filter(book -> book.getId().contains(arg)).findFirst();
-            return found;
+            Long arg = (Long) args[0];
+            int idx = arg.intValue() - 1;
+            return Optional.ofNullable(EXPECTED_GENRES.get(idx));
         });
 
         cliCommands.addBook();
-        Mockito.verify(bookRepo, Mockito.times(1)).save(new Book(bookTitle, EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(1), new ArrayList<>()));
+        Mockito.verify(bookRepo, Mockito.times(1)).save(new Book(0L, bookTitle, EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(1), new ArrayList<>()));
     }
 
     @DisplayName("Update book identified by ID")
     @Test
     public void updateBookById() {
 
-        String bookId = "b1";
+        long bookId = 1L;
         String bookTitle = "Test book";
 
         Mockito.when(cliValueProvider.getValue(Mockito.anyString()))
                 .thenReturn(bookTitle)
-                .thenReturn("a1")
-                .thenReturn("g2");
+                .thenReturn("1")
+                .thenReturn("2");
 
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        Mockito.when(bookRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
+        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
+        Mockito.when(bookRepoEager.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
             Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<Book> found = EXPECTED_BOOKS.stream().filter(book -> book.getId().contains(arg)).findFirst();
-            return found;
+            Long arg = (Long) args[0];
+            int idx = arg.intValue() - 1;
+            return Optional.ofNullable(EXPECTED_BOOKS.get(idx));
         });
 
-        Mockito.when(authorRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<Author>>) invocation -> {
+        Mockito.when(authorRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Author>>) invocation -> {
             Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<Author> found = EXPECTED_AUTHORS.stream().filter(book -> book.getId().contains(arg)).findFirst();
-            return found;
+            Long arg = (Long) args[0];
+            int idx = arg.intValue() - 1;
+            return Optional.ofNullable(EXPECTED_AUTHORS.get(idx));
         });
 
-        Mockito.when(genreRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<Genre>>) invocation -> {
+        Mockito.when(genreRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Genre>>) invocation -> {
             Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<Genre> found = EXPECTED_GENRES.stream().filter(book -> book.getId().contains(arg)).findFirst();
-            return found;
+            Long arg = (Long) args[0];
+            int idx = arg.intValue() - 1;
+            return Optional.ofNullable(EXPECTED_GENRES.get(idx));
         });
 
         ArgumentCaptor<Book> bookCaptor = ArgumentCaptor.forClass(Book.class);
@@ -281,52 +278,53 @@ public class CLICommandsTest {
         });
 
         cliCommands.updateBook(bookId);
-
-        Book result = EXPECTED_BOOKS.stream().filter(book -> book.getId().contains(bookId)).findFirst().get();
-        Mockito.verify(bookRepo, Mockito.times(1)).save(result);
+        Mockito.verify(bookRepo, Mockito.times(1)).save(new Book(bookId, bookTitle, EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(1), EXPECTED_COMMENTS.get(0)));
     }
 
     @DisplayName("Delete book by ID")
     @Test
     public void deleteBookById() {
 
-        String bookId = "b1";
-
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        Mockito.when(bookRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
+        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
+        Mockito.when(bookRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
             Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<Book> found = EXPECTED_BOOKS.stream().filter(book -> book.getId().contains(arg)).findFirst();
-            return found;
+            Long arg = (Long) args[0];
+            int idx = arg.intValue() - 1;
+            return Optional.ofNullable(EXPECTED_BOOKS.get(idx));
         });
 
-        cliCommands.deleteBook(bookId);
-
-        Book result = EXPECTED_BOOKS.stream().filter(book -> book.getId().contains(bookId)).findFirst().get();
-        Mockito.verify(bookRepo, Mockito.times(1)).delete(result);
+        cliCommands.deleteBook(1L);
+        Mockito.verify(bookRepo, Mockito.times(1)).delete(any(Book.class));
     }
 
     @DisplayName("List all comments of a specified book")
     @Test
     public void listBookComments() {
 
-        String bookId = "b1";
+        long bookId = 1L;
 
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        Mockito.when(bookRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
+        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
+        Mockito.when(bookRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
             Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<Book> found = EXPECTED_BOOKS.stream().filter(book -> book.getId().contains(arg)).findFirst();
-            return found;
+            Long arg = (Long) args[0];
+            int idx = arg.intValue() - 1;
+            return Optional.ofNullable(EXPECTED_BOOKS.get(idx));
+        });
+
+        Mockito.when(bookRepoEager.findWithCommentsById(longCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
+            Object[] args = invocation.getArguments();
+            Long arg = (Long) args[0];
+            int idx = arg.intValue() - 1;
+            return Optional.ofNullable(EXPECTED_BOOKS.get(idx));
         });
 
         String result = cliCommands.listBookComments(bookId);
         assertEquals("""
-                |------------------------|----------------------------------------------------------------------|
-                |COMMENT ID              |COMMENT TEXT                                                          |
-                |------------------------|----------------------------------------------------------------------|
-                |bc1111111111111111111111|Test book comment 1                                                   |
-                |------------------------|----------------------------------------------------------------------|
+                |----------|----------------------------------------------------------------------|
+                |COMMENT ID|COMMENT TEXT                                                          |
+                |----------|----------------------------------------------------------------------|
+                |1         |Test book comment 1                                                   |
+                |----------|----------------------------------------------------------------------|
                 """, result);
     }
 
@@ -334,23 +332,23 @@ public class CLICommandsTest {
     @Test
     public void findBookCommentById() {
 
-        String bookCommentId = "bc1111111111111111111111";
+        long bookCommentId = 2L;
 
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        Mockito.when(bookCommentRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<BookComment>>) invocation -> {
+        ArgumentCaptor<Long> longCaptor = ArgumentCaptor.forClass(Long.class);
+        Mockito.when(bookCommentRepo.findById(longCaptor.capture())).thenAnswer((Answer<Optional<BookComment>>) invocation -> {
             Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<BookComment> found = EXPECTED_COMMENTS.stream().filter(comment -> comment.getId().toString().equals(arg)).findFirst();
-            return found;
+            Long arg = (Long) args[0];
+            int idx = arg.intValue() - 1;
+            return Optional.ofNullable(EXPECTED_COMMENTS.get(idx).get(0));
         });
 
         String result = cliCommands.findBookCommentById(bookCommentId);
         assertEquals("""
-                |------------------------|----------------------------------------------------------------------|
-                |COMMENT ID              |COMMENT TEXT                                                          |
-                |------------------------|----------------------------------------------------------------------|
-                |bc1111111111111111111111|Test book comment 1                                                   |
-                |------------------------|----------------------------------------------------------------------|
+                |----------|----------------------------------------------------------------------|
+                |COMMENT ID|COMMENT TEXT                                                          |
+                |----------|----------------------------------------------------------------------|
+                |2         |Test book comment 2                                                   |
+                |----------|----------------------------------------------------------------------|
                 """, result);
     }
 
@@ -358,24 +356,13 @@ public class CLICommandsTest {
     @Test
     public void addBookComment() {
 
-        String bookId = "b1";
+        long bookId = 1L;
         String text = "Test comment";
 
         Mockito.when(cliValueProvider.getValue(Mockito.anyString())).thenReturn(text);
         Mockito.when(bookRepo.existsById(bookId)).thenAnswer((Answer<Boolean>) invocation -> true);
 
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        Mockito.when(bookRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
-            Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<Book> found = EXPECTED_BOOKS.stream().filter(book -> book.getId().contains(arg)).findFirst();
-            return found;
-        });
-
         cliCommands.addBookComment(bookId);
-
-        Book resultBook = EXPECTED_BOOKS.stream().filter(book -> book.getId().contains(bookId)).findFirst().get();
-        Mockito.verify(bookRepo, Mockito.times(1)).save(resultBook);
         Mockito.verify(bookCommentRepo, Mockito.times(1)).save(any(BookComment.class));
     }
 
@@ -383,78 +370,43 @@ public class CLICommandsTest {
     @Test
     public void updateBookComment() {
 
-        String bookId = "b1";
-        String bookCommentId = "bc1111111111111111111111";
+        long commentId = 1L;
         String text = "Test comment";
 
         Mockito.when(cliValueProvider.getValue(Mockito.anyString())).thenReturn(text);
-
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        Mockito.when(bookCommentRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<BookComment>>) invocation -> {
+        Mockito.when(bookCommentRepo.findById(commentId)).thenAnswer((Answer<Optional<BookComment>>) invocation -> {
             Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<BookComment> found = EXPECTED_COMMENTS.stream().filter(comment -> comment.getId().toString().equals(arg)).findFirst();
-            return found;
+            Long commentID = (Long) args[0];
+            int commentIdx = commentID.intValue() - 1;
+            return Optional.ofNullable(EXPECTED_COMMENTS.get(commentIdx).get(0));
         });
 
-        cliCommands.updateBookComment(bookCommentId);
-
-        BookComment result = new BookComment(new ObjectId(bookCommentId), text, bookId);
-        Mockito.verify(bookCommentRepo, Mockito.times(1)).save(result);
+        cliCommands.updateBookComment(commentId);
+        Mockito.verify(bookCommentRepo, Mockito.times(1)).save(any(BookComment.class));
     }
 
     @DisplayName("Delete specified book comment")
     @Test
     public void deleteBookComment() {
 
-        String bookId = "b1";
-        String bookCommentId = "bc1111111111111111111111";
+        long commentId = 1L;
 
-        Mockito.when(cliValueProvider.getValue(Mockito.anyString())).thenReturn(bookCommentId);
-        Mockito.when(bookCommentRepo.existsById(bookCommentId)).thenAnswer((Answer<Boolean>) invocation -> true);
+        Mockito.when(cliValueProvider.getValue(Mockito.anyString())).thenReturn(String.valueOf(commentId));
+        Mockito.when(bookCommentRepo.existsById(commentId)).thenAnswer((Answer<Boolean>) invocation -> true);
 
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        Mockito.when(bookCommentRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<BookComment>>) invocation -> {
-            Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<BookComment> found = EXPECTED_COMMENTS.stream().filter(comment -> comment.getId().toString().equals(arg)).findFirst();
-            return found;
-        });
-
-        Mockito.when(bookRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
-            Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<Book> found = EXPECTED_BOOKS.stream().filter(book -> book.getId().contains(arg)).findFirst();
-            return found;
-        });
-
-        cliCommands.deleteBookComment(bookCommentId);
-
-        Book result = EXPECTED_BOOKS.stream().filter(book -> book.getId().contains(bookId)).findFirst().get();
-        Mockito.verify(bookRepo, Mockito.times(1)).save(result);
-        Mockito.verify(bookCommentRepo, Mockito.times(1)).deleteById(bookCommentId);
+        cliCommands.deleteBookComment(commentId);
+        Mockito.verify(bookCommentRepo, Mockito.times(1)).deleteById(commentId);
     }
 
     @DisplayName("Delete all comments of specified book")
     @Test
     public void deleteAllBookComments() {
 
-        String bookId = "b1";
+        long bookId = 1L;
 
         Mockito.when(bookRepo.existsById(bookId)).thenAnswer((Answer<Boolean>) invocation -> true);
 
-        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        Mockito.when(bookRepo.findById(stringCaptor.capture())).thenAnswer((Answer<Optional<Book>>) invocation -> {
-            Object[] args = invocation.getArguments();
-            String arg = (String) args[0];
-            Optional<Book> found = EXPECTED_BOOKS.stream().filter(book -> book.getId().contains(arg)).findFirst();
-            return found;
-        });
-
         cliCommands.deleteAllBookComments(bookId);
-
-        Book result = EXPECTED_BOOKS.stream().filter(book -> book.getId().contains(bookId)).findFirst().get();
-        result.setBookComments(new ArrayList<>());
-        Mockito.verify(bookRepo, Mockito.times(1)).save(result);
+        Mockito.verify(bookCommentRepo, Mockito.times(1)).deleteByBookId(bookId);
     }
 }

@@ -9,26 +9,23 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ApiGate {
-
     List<Author> getAuthors();
-    Optional<Author> getAuthor(String id);
-
+    Optional<Author> getAuthor(long id);
     List<Genre> getGenres();
-    Optional<Genre> getGenre(String id);
-
-    List<Book> getBooks();
-    Optional<Book> getBookById(String id);
-    boolean isBookExist(String id);
+    Optional<Genre> getGenre(long id);
+    List<Book> getBooksWithAuthorAndGenre();
+    Optional<Book> getBookById(long id);
+    Optional<Book> getBookByIdWithAuthorAndGenre(long id);
+    boolean isBookExist(long id);
     List<Book> findBooksByTitle(String title);
-    Book save(String title, String authorId, String genreId);
+    Book save(String title, long authorId, long genreId);
     Book update(Book book);
     void deleteBook(Book book);
-
-    List<BookComment> getBookComments(Book book);
-    Optional<BookComment> getBookComment(String commentId);
-    boolean isBookCommentExist(String id);
-    BookComment createBookComment(String bookId, String text);
-    BookComment updateBookComment(String bookCommentId, String text);
-    void deleteBookCommentById(String commentId);
-    void deleteCommentsByBookId(String bookId);
+    List<BookComment> getCommentsByBook(Book book);
+    Optional<BookComment> getBookComment(long commentID);
+    boolean isBookCommentExist(long id);
+    BookComment createBookComment(long bookId, String text);
+    BookComment updateBookComment(long bookCommentId, String text);
+    void deleteBookCommentById(long commentId);
+    int deleteCommentsByBookId(long bookId);
 }

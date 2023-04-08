@@ -4,9 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.test.context.ContextConfiguration;
-import ru.otus.spring.configs.AppConfig;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import ru.otus.spring.model.Author;
 
 import java.util.ArrayList;
@@ -16,8 +14,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("JPA for Authors")
-@DataMongoTest
-@ContextConfiguration(classes = {AppConfig.class})
+@DataJpaTest
 public class AuthorRepoJpaTest {
 
     @Autowired
@@ -27,9 +24,9 @@ public class AuthorRepoJpaTest {
 
     @BeforeAll
     public static void before() {
-        EXPECTED_AUTHORS.add(new Author("a1", "Test author 1"));
-        EXPECTED_AUTHORS.add(new Author("a2", "Test author 2"));
-        EXPECTED_AUTHORS.add(new Author("a3", "Test author 3"));
+        EXPECTED_AUTHORS.add(new Author(1, "Test author 1"));
+        EXPECTED_AUTHORS.add(new Author(2, "Test author 2"));
+        EXPECTED_AUTHORS.add(new Author(3, "Test author 3"));
     }
 
     @DisplayName("Retrieve all authors from DB")
@@ -42,8 +39,7 @@ public class AuthorRepoJpaTest {
     @DisplayName("Retrieve author by ID")
     @Test
     public void findById() {
-        String authorId = "a1";
-        Optional<Author> author = authorRepo.findById(authorId);
+        Optional<Author> author = authorRepo.findById(1L);
         assertThat(author.get()).isEqualTo(EXPECTED_AUTHORS.get(0));
     }
 }

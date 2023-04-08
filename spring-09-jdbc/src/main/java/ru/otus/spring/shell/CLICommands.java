@@ -22,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CLICommands {
 
+    private static final String ROWS_DELETED = "rows-deleted";
     private static final String BOOK_CREATED = "book-created";
     private static final String NO_SUCH_BOOK = "no-such-book";
     private static final String BOOK_SAVED = "book-saved";
@@ -33,7 +34,6 @@ public class CLICommands {
     private static final String ENTER_BOOK_COMMENT_TEXT = "enter-book-comment-text";
     private static final String BOOK_COMMENT_CREATED = "book-comment-created";
     private static final String BOOK_COMMENT_DELETED = "book-comment-deleted";
-    private static final String BOOK_COMMENTS_DELETED_ALL = "book-comments-deleted-all";
     private static final String ENTER_AUTHOR_ID = "enter-author-id";
     private static final String ENTER_GENRE_ID = "enter-genre-id";
 
@@ -64,13 +64,13 @@ public class CLICommands {
 
     @ShellMethod(value = "get list of all books", key = {"bl", "books-list"})
     public String getBooksList() {
-        List<Book> books = apiGate.getBooks();
+        List<Book> books = apiGate.getBooksWithAuthorAndGenre();
         return bookPrinter.print(books);
     }
 
     @ShellMethod(value = "find book by ID", key = {"b", "book-find"})
-    public String getBookById(String id) {
-        var result = apiGate.getBookById(id);
+    public String findBookByIdWithAuthorAndGenre(long id) {
+        var result = apiGate.getBookByIdWithAuthorAndGenre(id);
         List<Book> toPrint = result.map(List::of).orElseGet(ArrayList::new);
         return bookPrinter.print(toPrint);
     }
@@ -88,14 +88,14 @@ public class CLICommands {
         String title = cliValueProvider.getValue(welcomeText);
 
         welcomeText = messageSource.getMessage(ENTER_AUTHOR_ID, null, appProps.locale());
-        String authorId = cliValueProvider.getValue(welcomeText);
+        long authorId = Long.parseLong(cliValueProvider.getValue(welcomeText));
         var existingAuthor = apiGate.getAuthor(authorId);
         if (existingAuthor.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_AUTHOR, null, appProps.locale());
         }
 
         welcomeText = messageSource.getMessage(ENTER_GENRE_ID, null, appProps.locale());
-        String genreId = cliValueProvider.getValue(welcomeText);
+        long genreId = Long.parseLong(cliValueProvider.getValue(welcomeText));
         var existingGenre = apiGate.getGenre(genreId);
         if (existingGenre.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_GENRE, null, appProps.locale());
@@ -106,9 +106,9 @@ public class CLICommands {
     }
 
     @ShellMethod(value = "update book", key = {"bu", "book-update"})
-    public String updateBook(String id) {
+    public String updateBook(long id) {
 
-        var existingBook = apiGate.getBookById(id);
+        var existingBook = apiGate.getBookByIdWithAuthorAndGenre(id);
         if (existingBook.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
@@ -119,18 +119,18 @@ public class CLICommands {
         book.setTitle(title);
 
         welcomeText = messageSource.getMessage(ENTER_AUTHOR_ID, null, appProps.locale());
-        String authorId = cliValueProvider.getValue(welcomeText + " (" + book.getAuthor() + "):");
+        long authorId = Long.parseLong(cliValueProvider.getValue(welcomeText + " (" + book.getAuthor() + "):"));
         var existingAuthor = apiGate.getAuthor(authorId);
         if (existingAuthor.isEmpty()) {
-            return messageSource.getMessage(NO_SUCH_AUTHOR, null, appProps.locale());
+            return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
         book.setAuthor(existingAuthor.get());
 
         welcomeText = messageSource.getMessage(ENTER_GENRE_ID, null, appProps.locale());
-        String genreId = cliValueProvider.getValue(welcomeText + " (" + book.getGenre() + "):");
+        long genreId = Long.parseLong(cliValueProvider.getValue(welcomeText + " (" + book.getGenre() + "):"));
         var existingGenre = apiGate.getGenre(genreId);
         if (existingGenre.isEmpty()) {
-            return messageSource.getMessage(NO_SUCH_GENRE, null, appProps.locale());
+            return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
         book.setGenre(existingGenre.get());
 
@@ -139,7 +139,7 @@ public class CLICommands {
     }
 
     @ShellMethod(value = "delete book", key = {"bd", "book-delete"})
-    public String deleteBook(String id) {
+    public String deleteBook(long id) {
 
         var existingBook = apiGate.getBookById(id);
         if (existingBook.isEmpty()) {
@@ -153,19 +153,19 @@ public class CLICommands {
     }
 
     @ShellMethod(value = "list all comments of a specified book", key = {"bcl", "book-comments-list"})
-    public String listBookComments(String bookId) {
+    public String listBookComments(long bookId) {
 
         var existingBook = apiGate.getBookById(bookId);
         if (existingBook.isEmpty()) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
 
-        var bookComments = apiGate.getBookComments(existingBook.get());
+        var bookComments = apiGate.getCommentsByBook(existingBook.get());
         return bookCommentPrinter.print(bookComments);
     }
 
     @ShellMethod(value = "find book comment by ID", key = {"bc", "book-comment-find"})
-    public String findBookCommentById(String commentId) {
+    public String findBookCommentById(long commentId) {
 
         var existingBookComment = apiGate.getBookComment(commentId);
         if (existingBookComment.isEmpty()) {
@@ -176,7 +176,7 @@ public class CLICommands {
     }
 
     @ShellMethod(value = "add a comment to specified book", key = {"bca", "book-comment-add"})
-    public String addBookComment(String bookId) {
+    public String addBookComment(long bookId) {
 
         var isBookExist = apiGate.isBookExist(bookId);
         if (!isBookExist) {
@@ -186,12 +186,11 @@ public class CLICommands {
         String welcomeText = messageSource.getMessage(ENTER_BOOK_COMMENT_TEXT, null, appProps.locale());
         String commentText = cliValueProvider.getValue(welcomeText);
         apiGate.createBookComment(bookId, commentText);
-
         return messageSource.getMessage(BOOK_COMMENT_CREATED, null, appProps.locale());
     }
 
     @ShellMethod(value = "update specified book comment", key = {"bcu", "book-comment-update"})
-    public String updateBookComment(String commentId) {
+    public String updateBookComment(long commentId) {
 
         var existingBookComment = apiGate.getBookComment(commentId);
         if (existingBookComment.isEmpty()) {
@@ -207,7 +206,7 @@ public class CLICommands {
     }
 
     @ShellMethod(value = "delete specified book comment", key = {"bcd", "book-comment-delete"})
-    public String deleteBookComment(String commentId) {
+    public String deleteBookComment(long commentId) {
 
         var isBookCommentExist = apiGate.isBookCommentExist(commentId);
         if (!isBookCommentExist) {
@@ -219,14 +218,14 @@ public class CLICommands {
     }
 
     @ShellMethod(value = "delete all comments of specified book", key = {"bcda", "book-comment-delete-all"})
-    public String deleteAllBookComments(String bookId) {
+    public String deleteAllBookComments(long bookId) {
 
         var isBookExist = apiGate.isBookExist(bookId);
         if (!isBookExist) {
             return messageSource.getMessage(NO_SUCH_BOOK, null, appProps.locale());
         }
 
-        apiGate.deleteCommentsByBookId(bookId);
-        return messageSource.getMessage(BOOK_COMMENTS_DELETED_ALL, null, appProps.locale());
+        int result = apiGate.deleteCommentsByBookId(bookId);
+        return messageSource.getMessage(ROWS_DELETED, new String[]{String.valueOf(result)}, appProps.locale());
     }
 }

@@ -8,36 +8,49 @@ spring:
   shell:
     interactive:
       enabled: true
-mongock:
-  runner-type: "InitializingBean" # For Spring Shell.
-  change-logs-scan-package:
-    - ru.otus.spring.mongock.changelog
-  mongo-db:
-    write-concern:
-      journal: false
-    read-concern: local
-
+  datasource:
+    url: jdbc:h2:mem:librarydb
+    #initialization-mode: always
+    #schema: schema.sql
+    #data: data.sql
+  liquibase:
+    enabled: true
+#  sql:
+#    init:
+#      mode: never
+#      data-locations: data.sql
+#      schema-locations: schema.sql
+  jpa:
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  h2:
+    console:
+      path: /h2-console
+      settings:
+        web-allow-others: true
 ---
 string-printer:
   columns:
     authors:
       id:
         header: AUTHOR ID
-        width: 24
+        width: 6
       name:
         header: NAME
         width: 40
     genres:
       id:
         header: GENRE ID
-        width: 24
+        width: 5
       name:
         header: NAME
         width: 40
     books:
       id:
         header: BOOK ID
-        width: 24
+        width: 7
       title:
         header: TITLE
         width: 40
@@ -50,7 +63,7 @@ string-printer:
     bookComments:
       id:
         header: COMMENT ID
-        width: 24
+        width: 10
       text:
         header: COMMENT TEXT
         width: 70

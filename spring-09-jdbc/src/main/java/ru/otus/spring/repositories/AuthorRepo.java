@@ -1,7 +1,7 @@
 package ru.otus.spring.repositories;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import ru.otus.spring.model.Author;
 
-public interface AuthorRepo extends MongoRepository<Author, String> {
+public interface AuthorRepo extends JpaRepository<Author, Long> {
 }
