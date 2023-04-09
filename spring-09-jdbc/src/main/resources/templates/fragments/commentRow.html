@@ -1,0 +1,19 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<th:block th:fragment="commentRow">
+    <div th:id="'commentRow_' + *{id}" th:comment_id="*{id}" class="row-comment">
+        <div class="row-comment-book-id book-comment-selector-book-id" th:utext="*{bookId}"></div>
+        <div class="row-comment-id book-comment-selector-id" th:utext="*{id}"></div>
+        <div class="row-comment-text">
+            <input type="text" class="book-comment-text book-comment-selector-text"
+                   th:placeholder="#{enter-comment-text}" th:value="*{text}" onchange="onChangeCommentText(this)"
+                   required/>
+            <button class="row-comment-save-button book-comment-selector-button-save" onclick="saveBookComment(this)"
+                    th:utext="#{save-comment}" disabled>Save
+            </button>
+            <button class="row-comment-delete-button book-comment-book-selector-button-delete"
+                    onclick="deleteBookComment(this)" th:utext="#{delete-comment}">Delete
+            </button>
+        </div>
+    </div>
+</th:block>

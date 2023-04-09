@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>OTUS homework</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" media="all" href="/styles.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.png">
+    <script src="/script.js" defer></script>
+    <script th:inline="javascript">
+        let selectAuthorText = /*[[#{select-author}]]*/;
+        let selectGenreText = /*[[#{select-genre}]]*/;
+        let deleteBookMessage = /*[[#{delete-book-dialog-message}]]*/;
+        let deleteBookCommentMessage = /*[[#{delete-comment-dialog-message}]]*/;
+    </script>
+</head>
+
+<body>
+
+<th:block th:insert="~{fragments/top::top}"/>
+
+<div>
+    <div class="table-header">
+        <div class="header-title" th:utext="#{table-header-title}">Title</div>
+        <div class="header-author" th:utext="#{table-header-author}">Author</div>
+        <div class="header-genre" th:utext="#{table-header-genre}">Genre</div>
+        <div class="header-actions" th:utext="#{table-header-actions}">Actions</div>
+    </div>
+    <div id="tableBody" class="table-body">
+        <th:block th:each="book:${books}" th:object="${book}" th:with="bookId=*{id}"
+                  th:insert="~{fragments/bookRow::bookRow}"/>
+    </div>
+    <div class="table-footer">
+        <button class="book-add-button-selector" onclick="addNewBook(this)" th:utext="#{add-new-book}">Add new book
+        </button>
+    </div>
+</div>
+
+<div id="blankBookRow" style="display:none">
+    <th:block th:object="${blankBookDto}" th:with="bookId=*{id}" th:insert="~{fragments/bookRow::bookRow}"/>
+</div>
+
+</body>
+</html>

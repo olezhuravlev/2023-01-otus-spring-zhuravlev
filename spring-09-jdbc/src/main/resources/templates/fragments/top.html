@@ -1,0 +1,6 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<div th:fragment="top" class="top-panel">
+    <div class="app-name"><span th:utext="#{app-name}"></span></div>
+    <th:block th:insert="~{fragments/i18n::i18n}"/>
+</div>

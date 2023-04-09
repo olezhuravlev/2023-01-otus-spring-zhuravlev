@@ -1,15 +1,18 @@
 package ru.otus.spring.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import java.util.List;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "books")
 public class Book {
@@ -36,11 +39,7 @@ public class Book {
         this.bookComments = bookComments;
     }
 
-    public void addBookComment(BookComment bookComment) {
-        bookComments.add(bookComment);
-    }
-
     public void deleteBookComment(String bookCommentId) {
-        bookComments.removeIf(bookComment -> bookComment.getId().toString().equals(bookCommentId));
+        bookComments.removeIf(bookComment -> bookComment.getId().equals(bookCommentId));
     }
 }

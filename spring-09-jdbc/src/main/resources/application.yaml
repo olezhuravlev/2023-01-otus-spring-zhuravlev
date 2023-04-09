@@ -1,13 +1,16 @@
-application:
-  locale: ru_RU
-  db-like-template: '%'
+#server:
+#  error:
+#    whitelabel:
+#      enabled: false
+#    include-stacktrace: always
+#    include-message: always
+#    path: /err
 spring:
-  messages:
-    basename: i18n/messages
-    encoding: UTF-8
-  shell:
-    interactive:
-      enabled: true
+  mvc:
+    throw-exception-if-no-handler-found: true
+#  web:
+#    resources:
+#      add-mappings: false
 mongock:
   runner-type: "InitializingBean" # For Spring Shell.
   change-logs-scan-package:
@@ -16,41 +19,6 @@ mongock:
     write-concern:
       journal: false
     read-concern: local
-
----
-string-printer:
-  columns:
-    authors:
-      id:
-        header: AUTHOR ID
-        width: 24
-      name:
-        header: NAME
-        width: 40
-    genres:
-      id:
-        header: GENRE ID
-        width: 24
-      name:
-        header: NAME
-        width: 40
-    books:
-      id:
-        header: BOOK ID
-        width: 24
-      title:
-        header: TITLE
-        width: 40
-      author:
-        header: AUTHOR
-        width: 30
-      genre:
-        header: GENRE
-        width: 15
-    bookComments:
-      id:
-        header: COMMENT ID
-        width: 24
-      text:
-        header: COMMENT TEXT
-        width: 70
+logging:
+  level:
+    ROOT: DEBUG

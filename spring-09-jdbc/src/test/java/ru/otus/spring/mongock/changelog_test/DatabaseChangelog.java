@@ -3,17 +3,16 @@ package ru.otus.spring.mongock.changelog_test;
 import com.github.cloudyrock.mongock.ChangeLog;
 import com.github.cloudyrock.mongock.ChangeSet;
 import com.mongodb.client.MongoDatabase;
-import org.bson.types.ObjectId;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
 import ru.otus.spring.model.BookComment;
 import ru.otus.spring.model.Genre;
-import ru.otus.spring.repositories.AuthorRepo;
-import ru.otus.spring.repositories.BookRepo;
-import ru.otus.spring.repositories.GenreRepo;
+import ru.otus.spring.repository.AuthorRepo;
+import ru.otus.spring.repository.BookCommentRepo;
+import ru.otus.spring.repository.BookRepo;
+import ru.otus.spring.repository.GenreRepo;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @ChangeLog
@@ -22,6 +21,7 @@ public class DatabaseChangelog {
     private final List<Author> authors;
     private final List<Genre> genres;
     private final List<Book> books;
+    private final List<BookComment> comments;
 
     public DatabaseChangelog() {
 
@@ -35,15 +35,15 @@ public class DatabaseChangelog {
         genres.add(new Genre("g2", "Test genre 2"));
         genres.add(new Genre("g3", "Test genre 3"));
 
-        List<BookComment> comments = new ArrayList<>();
-        comments.add(new BookComment(new ObjectId("bc1111111111111111111111"), "Test book comment 1", "b1"));
-        comments.add(new BookComment(new ObjectId("bc2222222222222222222222"), "Test book comment 2", "b2"));
-        comments.add(new BookComment(new ObjectId("bc3333333333333333333333"), "Test book comment 3", "b3"));
+        comments = new ArrayList<>();
+        comments.add(new BookComment("bc1", "Test book comment 1", "b1"));
+        comments.add(new BookComment("bc2", "Test book comment 2", "b2"));
+        comments.add(new BookComment("bc3", "Test book comment 3", "b3"));
 
         books = new ArrayList<>();
-        books.add(new Book("b1", "Test book 1", authors.get(0), genres.get(0), Arrays.asList(comments.get(0))));
-        books.add(new Book("b2", "Test book 2", authors.get(1), genres.get(1), Arrays.asList(comments.get(1))));
-        books.add(new Book("b3", "Test book 3", authors.get(2), genres.get(2), Arrays.asList(comments.get(2))));
+        books.add(new Book("b1", "Test book 1", authors.get(0), genres.get(0), new ArrayList<>()));
+        books.add(new Book("b2", "Test book 2", authors.get(1), genres.get(1), new ArrayList<>()));
+        books.add(new Book("b3", "Test book 3", authors.get(2), genres.get(2), new ArrayList<>()));
     }
 
     @ChangeSet(order = "001", id = "dropDb", author = "olezhuravlev", runAlways = true)
@@ -64,5 +64,10 @@ public class DatabaseChangelog {
     @ChangeSet(order = "004", id = "insertBooks", author = "olezhuravlev")
     public void insertBooks(BookRepo repo) {
         repo.saveAll(books);
+    }
+
+    @ChangeSet(order = "005", id = "insertBookComments", author = "olezhuravlev")
+    public void insertBookComments(BookCommentRepo repo) {
+        repo.saveAll(comments);
     }
 }
