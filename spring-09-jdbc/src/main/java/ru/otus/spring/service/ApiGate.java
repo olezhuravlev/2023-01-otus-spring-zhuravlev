@@ -1,5 +1,7 @@
 package ru.otus.spring.service;
 
+import ru.otus.spring.dto.BookCommentDto;
+import ru.otus.spring.dto.BookDto;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
 import ru.otus.spring.model.BookComment;
@@ -17,18 +19,11 @@ public interface ApiGate {
     Optional<Genre> getGenre(String id);
 
     List<Book> getBooks();
-    Optional<Book> getBookById(String id);
-    boolean isBookExist(String id);
-    List<Book> findBooksByTitle(String title);
-    Book save(String title, String authorId, String genreId);
-    Book update(Book book);
-    void deleteBook(Book book);
+    Optional<Book> getBook(String id);
+    Book saveBook(BookDto dto);
+    void deleteBookById(String bookId);
 
-    List<BookComment> getBookComments(Book book);
     Optional<BookComment> getBookComment(String commentId);
-    boolean isBookCommentExist(String id);
-    BookComment createBookComment(String bookId, String text);
-    BookComment updateBookComment(String bookCommentId, String text);
+    BookComment saveBookComment(BookCommentDto dto);
     void deleteBookCommentById(String commentId);
-    void deleteCommentsByBookId(String bookId);
 }
