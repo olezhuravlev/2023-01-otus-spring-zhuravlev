@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>ru.otus.spring</groupId>
+    <artifactId>webapp</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>Web Application</name>
+    <description>Web Application for REST service</description>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>ru.otus.spring</groupId>
+        <artifactId>library-application</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <otus.shared.version>1.0.0-SNAPSHOT</otus.shared.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>ru.otus.spring</groupId>
+            <artifactId>shared</artifactId>
+            <version>${otus.shared.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+
+            <!-- To create runnable JAR -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <finalName>webapp</finalName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

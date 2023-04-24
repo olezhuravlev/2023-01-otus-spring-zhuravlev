@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>OTUS homework</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <link rel="stylesheet" media="all" href="/styles.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.png">
+    <script src="/script.js" defer></script>
+    <script th:inline="javascript">
+        let selectAuthorText = /*[[#{select-author}]]*/;
+        let selectGenreText = /*[[#{select-genre}]]*/;
+        let deleteBookMessage = /*[[#{delete-book-dialog-message}]]*/;
+        let deleteBookCommentMessage = /*[[#{delete-comment-dialog-message}]]*/;
+    </script>
+</head>
+
+<body>
+
+<th:block th:insert="~{fragments/top::top}"/>
+
+<div th:object="${book}" th:book_id="${bookId}" class="form-book">
+    <div class="form-header">
+        <div class="form-header-title">
+            <div th:utext="#{book-info}">Book info</div>
+            <button class="form-save-button book-selector-button-save" onclick="saveBook(this)" th:utext="#{save-book}"
+                    disabled>Save
+            </button>
+        </div>
+        <div class="form-header-value">
+            <button class="form-delete-button book-selector-button-delete" onclick="deleteBook(this)"
+                    th:utext="#{delete-book}">Delete
+            </button>
+        </div>
+    </div>
+
+    <div id="tableBody" class="form-body">
+        <div class="form-book">
+            <div class="form-row-book">
+                <div class="form-row-title" th:utext="#{form-header-id}">Id:</div>
+                <div class="form-row-value form-row-book-id book-selector-id" th:utext="*{id}"></div>
+            </div>
+            <div class="form-row-book">
+                <div class="form-row-title" th:utext="#{form-header-title}">Title:</div>
+                <div class="form-row-value">
+                    <input type="text" class="form-input book-selector-title" th:placeholder="#{enter-title}"
+                           th:value="*{title}" onchange="onChangeText(this)" required/>
+                </div>
+            </div>
+            <div class="form-row-book">
+                <div class="form-row-title" th:utext="#{form-header-author}">Author:</div>
+                <div class="form-row-value">
+                    <select class="book-selector-author book-selector-authorId table-select form-select" onfocus="fillAuthorSelection(this)"
+                            onchange="onSelectAuthor(this)">
+                        <option selected id="authorId" name="authorIdName" th:value="*{authorId}"
+                                th:label="*{authorName}"></option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row-book">
+                <div class="form-row-title" th:utext="#{form-header-genre}">Genre:</div>
+                <div class="form-row-value">
+                    <select class="book-selector-genre book-selector-genreId table-select form-select" onfocus="fillGenreSelection(this)"
+                            onchange="onSelectGenre(this)">
+                        <option selected id="genreId" name="genreIdName" th:value="*{genreId}"
+                                th:label="*{genreName}"></option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-footer">
+        <button class="form-comment-add-button book-comment-add-button-selector" onclick="addNewBookComment(this)"
+                th:utext="#{add-new-comment}">Add new comment
+        </button>
+    </div>
+    <div id="commentTableBody" class="form-comment-table">
+        <th:block th:each="comment:${comments}" th:object="${comment}" th:insert="~{fragments/commentRow::commentRow}"/>
+    </div>
+</div>
+
+<div id="blankBookCommentRow" style="display:none">
+    <th:block th:object="${blankBookCommentDto}" th:insert="~{fragments/commentRow::commentRow}"/>
+</div>
+
+</body>
+</html>
