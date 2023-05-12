@@ -1,6 +1,5 @@
 package ru.otus.spring.validation;
 
-
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import ru.otus.spring.model.Author;
@@ -16,13 +15,13 @@ public class HasIdValidator implements ConstraintValidator<HasId, Object> {
     @Override
     public boolean isValid(Object value, ConstraintValidatorContext context) {
 
-        String id = null;
+        Long id = null;
         if (value instanceof Author) {
             id = ((Author) value).getId();
         } else if (value instanceof Genre) {
             id = ((Genre) value).getId();
         }
 
-        return id != null && !id.isBlank();
+        return id != null && id > 0;
     }
 }

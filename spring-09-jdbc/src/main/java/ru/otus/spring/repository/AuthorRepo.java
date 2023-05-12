@@ -1,7 +1,12 @@
 package ru.otus.spring.repository;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
 import ru.otus.spring.model.Author;
 
-public interface AuthorRepo extends MongoRepository<Author, String> {
+import java.util.List;
+import java.util.Optional;
+
+public interface AuthorRepo {
+
+    List<Author> findAll();
+    Optional<Author> findById(long id);
 }

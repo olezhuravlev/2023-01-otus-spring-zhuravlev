@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.otus.spring.component.ModelAndViewPopulator;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
@@ -14,15 +15,10 @@ import ru.otus.spring.model.Genre;
 import ru.otus.spring.service.ApiGate;
 import ru.otus.spring.service.SysInfoService;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -47,35 +43,35 @@ public class BookControllerTest {
     private static final List<Book> EXPECTED_BOOKS = new ArrayList<>();
 
     @BeforeAll
-    public static void before() {
+    public static void beforeAll() {
 
-        EXPECTED_AUTHORS.add(new Author("a1", "Test author 1"));
-        EXPECTED_AUTHORS.add(new Author("a2", "Test author 2"));
-        EXPECTED_AUTHORS.add(new Author("a3", "Test author 3"));
+        EXPECTED_AUTHORS.add(new Author(1, "Test author 1"));
+        EXPECTED_AUTHORS.add(new Author(2, "Test author 2"));
+        EXPECTED_AUTHORS.add(new Author(3, "Test author 3"));
 
-        EXPECTED_GENRES.add(new Genre("g1", "Test genre 1"));
-        EXPECTED_GENRES.add(new Genre("g2", "Test genre 2"));
-        EXPECTED_GENRES.add(new Genre("g3", "Test genre 3"));
+        EXPECTED_GENRES.add(new Genre(1, "Test genre 1"));
+        EXPECTED_GENRES.add(new Genre(2, "Test genre 2"));
+        EXPECTED_GENRES.add(new Genre(3, "Test genre 3"));
 
-        EXPECTED_COMMENTS.add(new BookComment("bc1", "Test book comment 1", "b1"));
-        EXPECTED_COMMENTS.add(new BookComment("bc2", "Test book comment 2", "b2"));
-        EXPECTED_COMMENTS.add(new BookComment("bc3", "Test book comment 3", "b3"));
+        EXPECTED_COMMENTS.add(new BookComment(1, "Test book comment 1", 1));
+        EXPECTED_COMMENTS.add(new BookComment(2, "Test book comment 2", 2));
+        EXPECTED_COMMENTS.add(new BookComment(3, "Test book comment 3", 3));
 
-        EXPECTED_BOOKS.add(new Book("b1", "Test book 1", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), Collections.singletonList(EXPECTED_COMMENTS.get(0))));
-        EXPECTED_BOOKS.add(new Book("b2", "Test book 2", EXPECTED_AUTHORS.get(1), EXPECTED_GENRES.get(1), Collections.singletonList(EXPECTED_COMMENTS.get(1))));
-        EXPECTED_BOOKS.add(new Book("b3", "Test book 3", EXPECTED_AUTHORS.get(2), EXPECTED_GENRES.get(2), Collections.singletonList(EXPECTED_COMMENTS.get(2))));
+        EXPECTED_BOOKS.add(new Book(1, "Test book 1", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), Collections.singletonList(EXPECTED_COMMENTS.get(0))));
+        EXPECTED_BOOKS.add(new Book(2, "Test book 2", EXPECTED_AUTHORS.get(1), EXPECTED_GENRES.get(1), Collections.singletonList(EXPECTED_COMMENTS.get(1))));
+        EXPECTED_BOOKS.add(new Book(3, "Test book 3", EXPECTED_AUTHORS.get(2), EXPECTED_GENRES.get(2), Collections.singletonList(EXPECTED_COMMENTS.get(2))));
     }
 
     @Test
     void testGetBookById() throws Exception {
 
+        long bookId = 1;
         String expectedViewName = "bookForm";
-        String bookId = "b1";
-        Optional<Book> bookOptional = EXPECTED_BOOKS.stream().filter(bookItem -> bookId.equals(bookItem.getId())).findFirst();
+        Optional<Book> bookOptional = EXPECTED_BOOKS.stream().filter(bookItem -> bookId == bookItem.getId()).findFirst();
 
-        given(apiGate.getBook(bookId)).willReturn(bookOptional);
+        given(apiGate.getBookById(bookId)).willReturn(bookOptional);
 
-        this.mockMvc.perform(get("/books/" + bookId))
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/" + bookId))
                 .andExpect(status().isOk())
                 .andExpect(view().name(expectedViewName));
     }
@@ -83,11 +79,11 @@ public class BookControllerTest {
     @Test
     void testGetBookById_NoSuchElementException() throws Exception {
 
-        String bookId = "b_UNKNOWN";
+        long bookId = -1000;
 
-        given(apiGate.getBook(bookId)).willThrow(new NoSuchElementException());
+        given(apiGate.getBookById(bookId)).willThrow(new NoSuchElementException());
 
-        this.mockMvc.perform(get("/books/" + bookId))
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/" + bookId))
                 .andExpect(status().isOk())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof NoSuchElementException));
     }

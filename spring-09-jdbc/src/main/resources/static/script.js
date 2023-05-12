@@ -6,7 +6,7 @@ let genresUrl = "/genres";
 let booksUrl = "/books";
 let bookCommentsUrl = "/comments";
 
-let tempIdPrefix = "tmpId_";
+let tempIdPrefix = "-";
 let bookRowIdPrefix = "bookRow_";
 let commentRowIdPrefix = "commentRow_";
 
@@ -93,7 +93,7 @@ function redirect(url) {
 }
 
 function generateId(prefix) {
-    return prefix + window.performance.now();
+    return prefix + Date.now();
 }
 
 function isValidString(value) {
@@ -360,7 +360,7 @@ function saveBook(element) {
         genre: {id: genreId},
     };
 
-    serverRequest(booksUrl, "POST",
+    serverRequest(booksUrl, "PUT",
         function successHandler(jsonText) {
             let parsed = parseJSON(jsonText);
             setBookValues(element, parsed);
@@ -447,13 +447,13 @@ function setBookValues(element, json) {
 
 function deleteBook(element) {
 
-    if (!confirm(deleteBookMessage)) {
-        return;
-    }
-
     let host = getParentAttributedElement(element, bookIdAttribute);
     if (isNewElement(host)) {
         host.remove();
+        return;
+    }
+
+    if (!confirm(deleteBookMessage)) {
         return;
     }
 
@@ -545,7 +545,7 @@ function saveBookComment(element) {
         bookId: commentBookId,
     };
 
-    serverRequest(bookCommentsUrl, "POST",
+    serverRequest(bookCommentsUrl, "PUT",
         function onSuccessHandler(jsonText) {
             let parsed = parseJSON(jsonText);
             setCommentValues(parsed, element);

@@ -13,17 +13,13 @@ import java.util.Optional;
 public interface ApiGate {
 
     List<Author> getAuthors();
-    Optional<Author> getAuthor(String id);
-
     List<Genre> getGenres();
-    Optional<Genre> getGenre(String id);
 
-    List<Book> getBooks();
-    Optional<Book> getBook(String id);
+    List<Book> getBooksWithAuthorAndGenre();
+    Optional<Book> getBookById(long id);
     Book saveBook(BookDto dto);
-    void deleteBookById(String bookId);
+    void deleteBookById(long id);
 
-    Optional<BookComment> getBookComment(String commentId);
     BookComment saveBookComment(BookCommentDto dto);
-    void deleteBookCommentById(String commentId);
+    void deleteBookCommentById(long commentId);
 }

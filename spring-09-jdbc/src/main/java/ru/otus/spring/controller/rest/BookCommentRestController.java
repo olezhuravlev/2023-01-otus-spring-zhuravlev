@@ -19,18 +19,18 @@ public class BookCommentRestController {
         this.apiGate = apiGate;
     }
 
-    @PostMapping(value = "/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/comments", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public BookCommentDto saveBookComment(@Valid @RequestBody BookCommentDto dto) {
         BookComment savedBookComment = apiGate.saveBookComment(dto);
         return BookCommentDto.toDto(savedBookComment);
     }
 
     @DeleteMapping(value = "/comments/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Map<String, String> deleteBookComment(@PathVariable("id") String commentId) {
+    public Map<String, Object> deleteBookCommentById(@PathVariable("id") long commentId) {
 
         apiGate.deleteBookCommentById(commentId);
 
-        Map<String, String> result = new HashMap<>();
+        Map<String, Object> result = new HashMap<>();
         result.put("id", commentId);
         result.put("result", "ok");
 

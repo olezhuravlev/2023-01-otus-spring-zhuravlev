@@ -8,7 +8,7 @@ import ru.otus.spring.model.Genre;
 @Data
 public class GenreDto {
 
-    private String id;
+    private long id;
     private String name;
 
     public static GenreDto toDto(Genre genre) {

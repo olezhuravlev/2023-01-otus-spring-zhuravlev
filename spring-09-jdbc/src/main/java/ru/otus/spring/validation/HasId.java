@@ -10,6 +10,7 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HasId {
+
     String message() default "Id not specified";
     Class<?>[] groups() default {};
     Class<? extends Genre>[] payload() default {};

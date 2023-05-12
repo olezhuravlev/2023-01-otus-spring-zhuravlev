@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.otus.spring.component.ModelAndViewPopulator;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.service.ApiGate;
@@ -38,10 +39,10 @@ public class AuthorRestControllerTest {
     private static final List<Author> EXPECTED_AUTHORS = new ArrayList<>();
 
     @BeforeAll
-    public static void before() {
-        EXPECTED_AUTHORS.add(new Author("a1", "Test author 1"));
-        EXPECTED_AUTHORS.add(new Author("a2", "Test author 2"));
-        EXPECTED_AUTHORS.add(new Author("a3", "Test author 3"));
+    public static void beforeAll() {
+        EXPECTED_AUTHORS.add(new Author(1, "Test author 1"));
+        EXPECTED_AUTHORS.add(new Author(2, "Test author 2"));
+        EXPECTED_AUTHORS.add(new Author(3, "Test author 3"));
     }
 
     @Test
@@ -50,7 +51,7 @@ public class AuthorRestControllerTest {
         given(apiGate.getAuthors()).willReturn(EXPECTED_AUTHORS);
 
         String expectedJson = new ObjectMapper().writeValueAsString(EXPECTED_AUTHORS);
-        this.mockMvc.perform(post("/authors"))
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/authors"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJson));
     }

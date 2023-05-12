@@ -1,0 +1,44 @@
+version: "1.0.0"
+services:
+  docker-hoster:
+    image: dvdarias/docker-hoster
+    container_name: docker-hoster
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+      - /etc/hosts:/tmp/hosts
+  postgres:
+    image: postgres:15.3
+    container_name: postgres
+    environment:
+      POSTGRES_USER: librarydb
+      POSTGRES_PASSWORD: librarydb
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "db_prod" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    depends_on:
+      - docker-hoster
+  pgadmin:
+    image: dpage/pgadmin4:7.1
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: olezhuravlev@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - 8081:80
+    depends_on:
+      postgres:
+        condition: service_healthy
+#  webapp-pg:
+#    image: olezhuravlev/webapp-pg:1.0.0
+#    container_name: webapp-pg
+#    #    ports:
+#    #      - 8080:8080
+#    network_mode: host
+#    depends_on:
+#      postgres:
+#        condition: service_healthy

@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.otus.spring.component.ModelAndViewPopulator;
 import ru.otus.spring.model.Genre;
 import ru.otus.spring.service.ApiGate;
@@ -38,10 +39,10 @@ public class GenreRestControllerTest {
     private static final List<Genre> EXPECTED_GENRES = new ArrayList<>();
 
     @BeforeAll
-    public static void before() {
-        EXPECTED_GENRES.add(new Genre("g1", "Test genre 1"));
-        EXPECTED_GENRES.add(new Genre("g2", "Test genre 2"));
-        EXPECTED_GENRES.add(new Genre("g3", "Test genre 3"));
+    public static void beforeAll() {
+        EXPECTED_GENRES.add(new Genre(1, "Test genre 1"));
+        EXPECTED_GENRES.add(new Genre(2, "Test genre 2"));
+        EXPECTED_GENRES.add(new Genre(3, "Test genre 3"));
     }
 
     @Test
@@ -50,7 +51,7 @@ public class GenreRestControllerTest {
         given(apiGate.getGenres()).willReturn(EXPECTED_GENRES);
 
         String expectedJson = new ObjectMapper().writeValueAsString(EXPECTED_GENRES);
-        this.mockMvc.perform(post("/genres"))
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/genres"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJson));
     }

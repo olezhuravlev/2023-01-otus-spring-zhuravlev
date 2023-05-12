@@ -7,5 +7,5 @@ import java.util.Locale;
 @ConfigurationProperties(prefix = "application")
 public record AppProps(
         Locale locale,
-        String dbLikeTemplate) {
+        long emptyItemId) {
 }

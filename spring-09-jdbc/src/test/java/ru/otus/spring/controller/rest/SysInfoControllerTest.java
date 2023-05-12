@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.otus.spring.component.ModelAndViewPopulator;
 import ru.otus.spring.dto.SysInfoDto;
 import ru.otus.spring.service.SysInfoService;
@@ -34,7 +35,7 @@ public class SysInfoControllerTest {
         given(sysInfoService.getSysInfo()).willReturn(expected);
 
         String expectedJson = new ObjectMapper().writeValueAsString(expected);
-        this.mockMvc.perform(post("/sysinfo"))
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/sysinfo"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJson));
     }
