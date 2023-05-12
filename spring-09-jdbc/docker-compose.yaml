@@ -1,0 +1,39 @@
+version: "1.0.0"
+services:
+  docker-hoster:
+    image: dvdarias/docker-hoster
+    container_name: docker-hoster
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+      - /etc/hosts:/tmp/hosts
+  mongodb:
+    image: mongo:6.0.5
+    container_name: mongodb
+    ports:
+      - 27017:27017
+    healthcheck:
+      test: echo 'db.runCommand({serverStatus:1}).ok' | mongosh localhost:27017 --quiet
+      interval: 5s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
+    depends_on:
+      - docker-hoster
+  restservice:
+    image: olezhuravlev/restservice:1.0.0
+    container_name: restservice
+    #    ports:
+    #      - 8081:8080
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    network_mode: host
+  webapp:
+    image: olezhuravlev/webapp:1.0.0
+    container_name: webapp
+    #    ports:
+    #      - 8080:8080
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    network_mode: host
