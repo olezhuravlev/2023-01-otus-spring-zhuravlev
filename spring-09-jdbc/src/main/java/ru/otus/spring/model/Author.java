@@ -1,22 +1,21 @@
 package ru.otus.spring.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "authors")
+@Entity
+@Table(name = "authors")
 public class Author {
 
     @Id
-    private String id;
-    private String name;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
-    @PersistenceCreator
-    public Author(String name) {
-        this.name = name;
-    }
+    @Column(name = "name", nullable = false, unique = false)
+    private String name;
 }

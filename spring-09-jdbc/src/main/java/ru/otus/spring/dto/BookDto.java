@@ -4,10 +4,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.otus.spring.validation.HasId;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
 import ru.otus.spring.model.Genre;
+import ru.otus.spring.validation.HasId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.List;
 @Data
 public class BookDto {
 
-    private String id;
+    private long id;
 
     @NotBlank(message = "{field-must-be-filled}")
     @Size(min = 2, max = 256, message = "{expected-size-2-256}")

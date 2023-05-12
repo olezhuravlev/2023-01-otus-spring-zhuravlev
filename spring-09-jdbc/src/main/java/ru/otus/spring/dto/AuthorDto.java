@@ -8,7 +8,7 @@ import ru.otus.spring.model.Author;
 @Data
 public class AuthorDto {
 
-    private String id;
+    private long id;
     private String name;
 
     public static AuthorDto toDto(Author author) {

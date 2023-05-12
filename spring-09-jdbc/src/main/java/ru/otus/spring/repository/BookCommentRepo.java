@@ -1,8 +1,13 @@
 package ru.otus.spring.repository;
 
-import org.springframework.data.mongodb.repository.MongoRepository;
 import ru.otus.spring.model.BookComment;
 
-public interface BookCommentRepo extends MongoRepository<BookComment, String> {
-    int deleteByBookId(String bookId);
+import java.util.Optional;
+
+public interface BookCommentRepo {
+
+    Optional<BookComment> findById(long commentId);
+    boolean isBookCommentExist(long commentId);
+    BookComment save(BookComment bookComment);
+    void deleteCommentById(long commentId);
 }

@@ -1,13 +1,10 @@
 package ru.otus.spring.service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import ru.otus.spring.dto.BookCommentDto;
 import ru.otus.spring.dto.BookDto;
 import ru.otus.spring.model.Author;
@@ -19,119 +16,99 @@ import ru.otus.spring.repository.BookCommentRepo;
 import ru.otus.spring.repository.BookRepo;
 import ru.otus.spring.repository.GenreRepo;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
+@RequiredArgsConstructor
 public class ApiGateImpl implements ApiGate {
 
-    @Autowired
-    AuthorRepo authorRepo;
+    private final AuthorRepo authorRepo;
+    private final GenreRepo genreRepo;
+    private final BookRepo bookRepo;
+    private final BookCommentRepo bookCommentRepo;
 
-    @Autowired
-    GenreRepo genreRepo;
-
-    @Autowired
-    BookRepo bookRepo;
-
-    @Autowired
-    BookCommentRepo bookCommentRepo;
+    @PersistenceContext
+    private final EntityManager entityManager;
 
     @Override
+    @Transactional(readOnly = true)
     public List<Author> getAuthors() {
         return authorRepo.findAll();
     }
 
     @Override
-    public Optional<Author> getAuthor(String id) {
-        return authorRepo.findById(id);
-    }
-
-    @Override
+    @Transactional(readOnly = true)
     public List<Genre> getGenres() {
         return genreRepo.findAll();
     }
 
     @Override
-    public Optional<Genre> getGenre(String id) {
-        return genreRepo.findById(id);
+    @Transactional(readOnly = true)
+    public List<Book> getBooksWithAuthorAndGenre() {
+        return bookRepo.findAllWithAuthorAndGenre();
     }
 
     @Override
-    public List<Book> getBooks() {
-        return bookRepo.findAll();
-    }
-
-    @Override
-    public Optional<Book> getBook(String id) {
+    @Transactional(readOnly = true)
+    public Optional<Book> getBookById(long id) {
         return bookRepo.findById(id);
     }
 
-    @Transactional
     @Override
+    @Transactional
     public Book saveBook(BookDto dto) {
 
-        Optional<Author> existingAuthor = getAuthor(dto.getAuthor().getId());
-        Optional<Genre> existingGenre = getGenre(dto.getGenre().getId());
-
-        Optional<Book> existingBook = getBook(dto.getId());
-
-        Book book;
-        if (existingBook.isPresent()) {
-            book = existingBook.get();
-        } else {
-            book = new Book();
-            book.setBookComments(new ArrayList<>());
+        long bookId = dto.getId();
+        Book existingBook = null;
+        if (bookRepo.isBookExist(bookId)) {
+            existingBook = bookRepo.findById(bookId).get();
         }
 
-        book.setTitle(dto.getTitle());
-        book.setAuthor(existingAuthor.get());
-        book.setGenre(existingGenre.get());
+        if (existingBook == null) {
+            existingBook = new Book();
+        }
 
-        return bookRepo.save(book);
+        Author existingAuthor = entityManager.find(Author.class, dto.getAuthor().getId());
+        Genre existingGenre = entityManager.find(Genre.class, dto.getGenre().getId());
+
+        existingBook.setTitle(dto.getTitle());
+        existingBook.setAuthor(existingAuthor);
+        existingBook.setGenre(existingGenre);
+
+        return bookRepo.save(existingBook);
     }
 
     @Override
     @Transactional
-    public void deleteBookById(String bookId) {
-        bookRepo.deleteById(bookId);
-    }
-
-    @Override
-    public Optional<BookComment> getBookComment(String id) {
-        return bookCommentRepo.findById(id);
+    public void deleteBookById(long id) {
+        bookRepo.deleteById(id);
     }
 
     @Override
     @Transactional
     public BookComment saveBookComment(BookCommentDto dto) {
 
-        Optional<BookComment> existingBookComment = getBookComment(dto.getId());
+        long commentId = dto.getId();
 
-        BookComment bookComment;
-        if (existingBookComment.isPresent()) {
-            bookComment = existingBookComment.get();
-        } else {
-            bookComment = new BookComment();
-            bookComment.setBookId(dto.getBookId());
+        BookComment existingComment = null;
+        if (bookCommentRepo.isBookCommentExist(commentId)) {
+            existingComment = bookCommentRepo.findById(commentId).get();
         }
 
-        bookComment.setText(dto.getText());
+        if (existingComment == null) {
+            existingComment = new BookComment();
+        }
 
-        return bookCommentRepo.save(bookComment);
+        existingComment.setBookId(dto.getBookId());
+        existingComment.setText(dto.getText());
+
+        return bookCommentRepo.save(existingComment);
     }
 
     @Override
     @Transactional
-    public void deleteBookCommentById(String commentId) {
-
-        // To clean the comment out of a book we need 'bookId' kept in the comment entity.
-        Optional<BookComment> existingBookComment = bookCommentRepo.findById(commentId);
-        BookComment bookComment = existingBookComment.get();
-        String bookId = bookComment.getBookId();
-
-        Optional<Book> existingBook = bookRepo.findById(bookId);
-        Book book = existingBook.get();
-        book.deleteBookComment(commentId);
-        bookRepo.save(book);
-
-        bookCommentRepo.deleteById(commentId);
+    public void deleteBookCommentById(long commentId) {
+        bookCommentRepo.deleteCommentById(commentId);
     }
 }

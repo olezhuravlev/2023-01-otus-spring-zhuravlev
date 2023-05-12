@@ -1,45 +1,38 @@
 package ru.otus.spring.model;
 
-import java.util.List;
-
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "books")
+@Entity
+@Table(name = "books")
+@NamedEntityGraph(name = "book-author-genre", attributeNodes = {@NamedAttributeNode("author"), @NamedAttributeNode("genre")})
 public class Book {
 
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @DBRef
+    @ManyToOne(targetEntity = Author.class, cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
     private Author author;
 
-    @DBRef
+    @ManyToOne(targetEntity = Genre.class, cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @JoinColumn(name = "genre_id", nullable = false)
     private Genre genre;
 
-    @DBRef
+    @Fetch(FetchMode.SUBSELECT)
+    @OneToMany(mappedBy = "bookId", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<BookComment> bookComments;
-
-    @PersistenceCreator
-    public Book(String title, Author author, Genre genre, List<BookComment> bookComments) {
-        this.title = title;
-        this.author = author;
-        this.genre = genre;
-        this.bookComments = bookComments;
-    }
-
-    public void deleteBookComment(String bookCommentId) {
-        bookComments.removeIf(bookComment -> bookComment.getId().equals(bookCommentId));
-    }
 }

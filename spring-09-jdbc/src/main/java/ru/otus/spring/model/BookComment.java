@@ -1,26 +1,24 @@
 package ru.otus.spring.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "book_comments")
+@Entity
+@Table(name = "book_comments")
 public class BookComment {
 
     @Id
-    private String id;
-    private String text;
-    private String bookId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
-    @PersistenceCreator
-    public BookComment(String text, String bookId) {
-        this.text = text;
-        this.bookId = bookId;
-    }
+    @Column(name = "text", nullable = false, unique = false)
+    private String text;
+
+    @Column(name = "book_id", nullable = false, unique = false)
+    private long bookId;
 }
