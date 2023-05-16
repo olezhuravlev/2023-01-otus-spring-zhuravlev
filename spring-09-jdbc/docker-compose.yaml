@@ -6,34 +6,39 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock
       - /etc/hosts:/tmp/hosts
-  mongodb:
-    image: mongo:6.0.5
-    container_name: mongodb
+  postgres:
+    image: postgres:15.3
+    container_name: postgres
+    environment:
+      POSTGRES_USER: librarydb
+      POSTGRES_PASSWORD: librarydb
     ports:
-      - 27017:27017
+      - 5432:5432
     healthcheck:
-      test: echo 'db.runCommand({serverStatus:1}).ok' | mongosh localhost:27017 --quiet
-      interval: 5s
-      timeout: 5s
-      start_period: 5s
-      retries: 3
+      test: [ "CMD-SHELL", "pg_isready", "-d", "db_prod" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
     depends_on:
       - docker-hoster
-  restservice:
-    image: olezhuravlev/restservice:1.0.0
-    container_name: restservice
-    #    ports:
-    #      - 8081:8080
+  pgadmin:
+    image: dpage/pgadmin4:7.1
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: olezhuravlev@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - 8081:80
     depends_on:
-      mongodb:
+      postgres:
         condition: service_healthy
-    network_mode: host
-  webapp:
-    image: olezhuravlev/webapp:1.0.0
-    container_name: webapp
+  webapp-pg:
+    image: olezhuravlev/webapp-pg:1.0.0
+    container_name: webapp-pg
     #    ports:
     #      - 8080:8080
-    depends_on:
-      mongodb:
-        condition: service_healthy
     network_mode: host
+    depends_on:
+      postgres:
+        condition: service_healthy

@@ -1,0 +1,31 @@
+spring:
+  mvc:
+    throw-exception-if-no-handler-found: true
+  datasource:
+    driver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      mode: always
+      data-locations:
+        - classpath:db_init/genres.sql
+        - classpath:db_init/authors.sql
+        - classpath:db_init/books.sql
+        - classpath:db_init/book_comments.sql
+        - classpath:db_init/sequences.sql
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: true
+        format_sql: true
+        hbm2ddl:
+          auto: create-drop
+    defer-datasource-initialization: true
+logging:
+  level:
+    ROOT: DEBUG
+#    org:
+#      hibernate:
+#        type: trace
+server:
+  port: 8082
