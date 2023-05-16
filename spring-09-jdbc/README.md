@@ -1,17 +1,6 @@
 ## Приложение "Библиотека"
 
-### 1. Состав
-
-Состоит из трех модулей:
-
-- `shared` - java-модуль, содержащий интерфейсы и классы (модель, DTO и валидацию), совместно используемые несколькими
-  модулями;
-- `restservice` - REST-сервис, принимающий **реактивные** POST-запросы и извлекающий данные из запущенного экземпляра
-  **реактивного** MondoDB;
-- `webapp` - веб-приложение, принимающее **обычные** GET- и POST-запросы от браузера и использующее **реактивные**
-  запросы к модулю `restservice` для получения необходимых данных.
-
-### 2. Запуск
+### 1. Запуск
 
 <details>
   <summary>Вариант 1 (предпочтительный): Docker-Compose.</summary>
@@ -20,19 +9,18 @@
 
 ````yaml
 $ docker-compose up -d
-  [ + ] Running 7/7
-  ✔ webapp 4 layers [⣿⣿⣿⣿]      0B/0B      Pulled                                                                                                                                                                                  12.0s
-  ✔ 38a980f2cc8a Already exists                                                                                                                                                                                                   0.0s
-  ✔ de849f1cfbe6 Already exists                                                                                                                                                                                                   0.0s
-  ✔ a7203ca35e75 Already exists                                                                                                                                                                                                   0.0s
-  ✔ 9ac3613f881d Pull complete                                                                                                                                                                                                    9.2s
-  ✔ restservice 1 layers [⣿]      0B/0B      Pulled                                                                                                                                                                                 9.6s
-  ✔ d52bfd33d0d9 Pull complete                                                                                                                                                                                                    6.8s
-  [ + ] Running 4/4
-  ✔ Container docker-hoster  Running                                                                                                                                                                                                0.0s
-  ✔ Container mongodb        Healthy                                                                                                                                                                                                0.6s
-  ✔ Container webapp         Started                                                                                                                                                                                                0.9s
-  ✔ Container restservice    Started                                                                                                                                                                                                0.9s
+  [ + ] Running 5/5
+  ✔ webapp-pg 4 layers [⣿⣿⣿⣿]      0B/0B      Pulled    10.1s
+  ✔ 38a980f2cc8a Already exists                           0.0s
+  ✔ de849f1cfbe6 Already exists                           0.0s
+  ✔ a7203ca35e75 Already exists                           0.0s
+  ✔ 630b03514285 Pull complete                            7.2s
+  [ + ] Running 5/5
+  ✔ Network spring-09-jdbc_default  Created               0.1s
+  ✔ Container docker-hoster         Started               0.6s
+  ✔ Container postgres              Healthy              31.5s
+  ✔ Container webapp-pg             Started              31.6s
+  ✔ Container pgadmin               Started
 ````
 
 </details>
@@ -40,29 +28,32 @@ $ docker-compose up -d
 <details>
   <summary>Вариант 2: "java -jar".</summary>
 
-JAR-артефакты модулей `restservice` и `webapp` являются исполняемыми, их следует собрать из корня проекта:
+Артефакт `webapp-pg.jap` является исполняемыми, его следует собрать из корня проекта:
 
 ````shell
-$ ./mvnw clean install
-... 
-[INFO] ------------------------------------------------------------------------
-[INFO] Reactor Summary for library-application 1.0.0-SNAPSHOT:
+$ ./mvnw clean install -DskipTests
+
+[INFO] Scanning for projects...
 [INFO] 
-[INFO] library-application ................................ SUCCESS [  0.148 s]
-[INFO] Shared ............................................. SUCCESS [  2.301 s]
-[INFO] REST Service ....................................... SUCCESS [ 48.536 s]
-[INFO] Web Application .................................... SUCCESS [  2.020 s]
+[INFO] -------------------< ru.otus.spring:spring-09-jdbc >--------------------
+[INFO] Building spring 0.0.1-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+...
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.018 s
+[INFO] Finished at: 2023-05-16T21:11:35+07:00
+[INFO] ------------------------------------------------------------------------
 ````
 
-После сборки артефакты можно запустить. Модуль `restservice`:
+После сборки артефакт можно запустить:
 
 ````shell
-$ cd restservice/target
+$ cd target
 
-$ java -jar restservice.jar
+$ java -jar webapp-pg.jar
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -71,23 +62,7 @@ $ java -jar restservice.jar
   '  |____| .__|_| |_|_| |_\__, | / / / /
  =========|_|==============|___/=/_/_/_/
  :: Spring Boot ::                (v3.0.6)
-...
-````
 
-и модуль `webapp`:
-
-````shell
-$ cd ../webapp/target
-
-$ java -jar webapp.jar
-
-  .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::                (v3.0.6)
 ...
 ````
 
@@ -96,20 +71,13 @@ $ java -jar webapp.jar
 <details>
   <summary>Вариант 3: Конфигурация Intellij IDEA.</summary>
 
-Запуcтить main-классы
-[RestServiceApplication.java](restservice/src/main/java/ru/otus/restservice/RestServiceApplication.java) и
-[WebappApplication.java](webapp/src/main/java/ru/otus/webapp/WebappApplication.java).
-
+Запуcтить main-класс [Application.java](src/main/java/ru/otus/spring/Application.java)
 </details>
 
-### 3. Доступ к приложению
+### 2. Доступ к приложению
 
-Запущенное веб-приложение доступно на порту `8080`
-([webapp: application.yaml](webapp/src/main/resources/application.yaml)):
+Запущенное веб-приложение доступно на порту `8080` ([application.yaml](src/main/resources/application.yaml)).
 
 ![library-app.png](library-app.png)
-
-> REST-сервис запускается на порту `8081`, MongoDb ожидается на стандартном порту `27017`
-> ([restservice: application.yaml](restservice/src/main/resources/application.yaml)).
 
 ---
