@@ -1,36 +1,29 @@
-package ru.otus.spring.repository;
+package ru.otus.spring.testcontainers.repository;
 
 import org.hibernate.Hibernate;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
 import ru.otus.spring.model.BookComment;
 import ru.otus.spring.model.Genre;
+import ru.otus.spring.repository.AuthorRepo;
+import ru.otus.spring.repository.BookRepo;
+import ru.otus.spring.repository.GenreRepo;
+import ru.otus.spring.testcontainers.AbstractBaseContainer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("JPA for Books")
-@SpringBootTest
-@Testcontainers
-public class BookRepoJpaTest {
-
-    private static final String DATABASE_NAME = "librarydb_test";
+public class BookRepoJpaTest extends AbstractBaseContainer {
 
     private static final List<Author> EXPECTED_AUTHORS = new ArrayList<>();
     private static final List<Genre> EXPECTED_GENRES = new ArrayList<>();
@@ -45,18 +38,6 @@ public class BookRepoJpaTest {
 
     @Autowired
     private BookRepo bookRepo;
-
-    @Container
-    public static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:15.3")
-            .withReuse(true)
-            .withDatabaseName(DATABASE_NAME);
-
-    @DynamicPropertySource
-    static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
-        registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
-        registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
-    }
 
     @BeforeAll
     public static void beforeAll() {
@@ -73,15 +54,15 @@ public class BookRepoJpaTest {
         EXPECTED_COMMENTS.add(new BookComment(2, "Test book comment 2", 2));
         EXPECTED_COMMENTS.add(new BookComment(3, "Test book comment 3", 3));
 
-        EXPECTED_BOOKS.add(new Book(1, "Test book 1", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), Arrays.asList(EXPECTED_COMMENTS.get(0))));
-        EXPECTED_BOOKS.add(new Book(2, "Test book 2", EXPECTED_AUTHORS.get(1), EXPECTED_GENRES.get(1), Arrays.asList(EXPECTED_COMMENTS.get(1))));
-        EXPECTED_BOOKS.add(new Book(3, "Test book 3", EXPECTED_AUTHORS.get(2), EXPECTED_GENRES.get(2), Arrays.asList(EXPECTED_COMMENTS.get(2))));
+        EXPECTED_BOOKS.add(new Book(1, "Test book 1", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), singletonList(EXPECTED_COMMENTS.get(0))));
+        EXPECTED_BOOKS.add(new Book(2, "Test book 2", EXPECTED_AUTHORS.get(1), EXPECTED_GENRES.get(1), singletonList(EXPECTED_COMMENTS.get(1))));
+        EXPECTED_BOOKS.add(new Book(3, "Test book 3", EXPECTED_AUTHORS.get(2), EXPECTED_GENRES.get(2), singletonList(EXPECTED_COMMENTS.get(2))));
     }
 
     @DisplayName("Retrieve all books from DB")
     @Test
     @Transactional
-    public void findAll() {
+    void findAll() {
         List<Book> books = bookRepo.findAllWithAuthorAndGenre();
         assertThat(books).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(EXPECTED_BOOKS);
     }
@@ -89,13 +70,13 @@ public class BookRepoJpaTest {
     @DisplayName("Retrieve book by ID")
     @Test
     @Transactional
-    public void findById() {
+    void findById() {
 
         long bookId = 1;
 
         Book expectedBook = EXPECTED_BOOKS.stream().filter(book -> bookId == book.getId()).findFirst().orElse(null);
         Optional<Book> book = bookRepo.findById(bookId);
-        assertThat(book.isPresent()).isTrue();
+        assertThat(book).isPresent();
 
         Book foundBook = book.get();
         foundBook.setAuthor(Hibernate.unproxy(foundBook.getAuthor(), Author.class));
@@ -105,8 +86,7 @@ public class BookRepoJpaTest {
 
     @DisplayName("Check if book exists")
     @Test
-    @Transactional
-    public void isBookExist() {
+    void isBookExist() {
 
         long existingBookId = 1;
         long absentBookId = -1000;
@@ -121,8 +101,7 @@ public class BookRepoJpaTest {
     @DisplayName("Save book")
     @Test
     @Transactional
-    @DirtiesContext
-    public void save() {
+    void save() {
 
         // Initial sequence set to 1000.
         long initialSequenceId = 1000;
@@ -144,17 +123,16 @@ public class BookRepoJpaTest {
     @DisplayName("Delete book by ID")
     @Test
     @Transactional
-    @DirtiesContext
-    public void delete() {
+    void delete() {
 
         long bookId = 1;
 
         Optional<Book> existingBookBefore = bookRepo.findById(bookId);
-        assertThat(existingBookBefore.isPresent()).isTrue();
+        assertThat(existingBookBefore).isPresent();
 
         bookRepo.deleteById(bookId);
 
         Optional<Book> existingBookAfter = bookRepo.findById(bookId);
-        assertThat(existingBookAfter.isPresent()).isFalse();
+        assertThat(existingBookAfter).isNotPresent();
     }
 }

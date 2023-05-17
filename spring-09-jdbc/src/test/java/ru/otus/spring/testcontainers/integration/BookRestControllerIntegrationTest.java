@@ -1,17 +1,13 @@
-package ru.otus.spring.integration;
+package ru.otus.spring.testcontainers.integration;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.springframework.transaction.annotation.Transactional;
 import ru.otus.spring.dto.BookDto;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
@@ -19,6 +15,7 @@ import ru.otus.spring.model.BookComment;
 import ru.otus.spring.model.Genre;
 import ru.otus.spring.repository.BookCommentRepo;
 import ru.otus.spring.repository.BookRepo;
+import ru.otus.spring.testcontainers.AbstractBaseContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,11 +25,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Integration tests for Books")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Testcontainers
-public class BookRestControllerIntegrationTest {
-
-    private static final String DATABASE_NAME = "librarydb_test";
+@AutoConfigureMockMvc
+class BookRestControllerIntegrationTest extends AbstractBaseContainer {
 
     @Autowired
     private WebTestClient webTestClient;
@@ -42,18 +36,6 @@ public class BookRestControllerIntegrationTest {
 
     @Autowired
     private BookCommentRepo bookCommentRepo;
-
-    @Container
-    public static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:15.3")
-            .withReuse(true)
-            .withDatabaseName(DATABASE_NAME);
-
-    @DynamicPropertySource
-    static void setProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
-        registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
-        registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
-    }
 
     private static final List<Author> EXPECTED_AUTHORS = new ArrayList<>();
     private static final List<Genre> EXPECTED_GENRES = new ArrayList<>();
@@ -66,6 +48,7 @@ public class BookRestControllerIntegrationTest {
 
     @DisplayName("Save Book")
     @Test
+    @Transactional
     void saveBook() {
 
         // Initial sequence set to 1000.
@@ -92,6 +75,7 @@ public class BookRestControllerIntegrationTest {
 
     @DisplayName("Delete Book by ID")
     @Test
+    @Transactional
     void deleteBookById() {
 
         long bookId = 1;
