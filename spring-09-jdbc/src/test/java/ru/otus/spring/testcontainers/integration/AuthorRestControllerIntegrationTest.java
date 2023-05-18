@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.otus.spring.model.Author;
@@ -35,10 +36,31 @@ public class AuthorRestControllerIntegrationTest extends AbstractBaseContainer {
 
     @DisplayName("Request all authors from DB")
     @Test
-    void find() throws Exception {
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    void requestAllAuthors() throws Exception {
         String expectedJson = new ObjectMapper().writeValueAsString(EXPECTED_AUTHORS);
         this.mockMvc.perform(MockMvcRequestBuilders.post("/authors"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(expectedJson));
+    }
+
+    @DisplayName("Request all authors by not authenticated user")
+    @Test
+    void requestAllAuthors_NotAuthenticated() throws Exception {
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/authors")).andExpect(status().is3xxRedirection());
+    }
+
+    @DisplayName("Request all authors by Anonymous user")
+    @Test
+    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    void requestAllAuthors_Anonymous() throws Exception {
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/authors")).andExpect(status().is4xxClientError());
+    }
+
+    @DisplayName("Request all authors by authenticated non-Admin user")
+    @Test
+    @WithMockUser(authorities = {"ROLE_COMMENTER", "ROLE_READER"})
+    void requestAllAuthors_nonAdmin() throws Exception {
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/authors")).andExpect(status().is4xxClientError());
     }
 }

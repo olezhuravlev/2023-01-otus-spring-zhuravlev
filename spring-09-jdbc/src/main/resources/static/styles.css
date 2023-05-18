@@ -355,3 +355,12 @@ select {
 .message-info {
 
 }
+
+.user-info {
+    color: grey;
+    text-align: right;
+}
+
+.user-i18n {
+    align-items: end;
+}

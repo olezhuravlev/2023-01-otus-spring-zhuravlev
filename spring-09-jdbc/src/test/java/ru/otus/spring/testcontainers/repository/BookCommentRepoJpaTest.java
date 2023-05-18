@@ -42,7 +42,7 @@ public class BookCommentRepoJpaTest extends AbstractBaseContainer {
 
     @DisplayName("Check if book comment exists")
     @Test
-    void isBookExist() {
+    void isBookCommentExist() {
 
         long existingBookCommentId = 1;
         long absentBookCommentId = -1000;

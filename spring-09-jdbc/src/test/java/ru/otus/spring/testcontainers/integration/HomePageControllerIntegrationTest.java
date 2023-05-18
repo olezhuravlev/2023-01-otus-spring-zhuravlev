@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -22,20 +23,77 @@ class HomePageControllerIntegrationTest extends AbstractBaseContainer {
 
     @DisplayName("Request Home page")
     @Test
-    void find() throws Exception {
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    void requestHomePage() throws Exception {
 
-        MvcResult mvcResult1 = this.mockMvc.perform(MockMvcRequestBuilders.get("/"))
+        MvcResult mvcResult1 = this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/"))
                 .andExpect(status().isOk()).andReturn();
         String mvcResultString1 = mvcResult1.getResponse().getContentAsString();
 
-        MvcResult mvcResult2 = this.mockMvc.perform(MockMvcRequestBuilders.get("/books"))
+        MvcResult mvcResult2 = this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/books"))
                 .andExpect(status().isOk()).andReturn();
         String mvcResultString2 = mvcResult2.getResponse().getContentAsString();
 
-        MvcResult mvcResult3 = this.mockMvc.perform(MockMvcRequestBuilders.get("/books/"))
+        MvcResult mvcResult3 = this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/books/"))
                 .andExpect(status().isOk()).andReturn();
         String mvcResultString3 = mvcResult3.getResponse().getContentAsString();
 
         Assertions.assertThat(mvcResultString1).isEqualTo(mvcResultString2).isEqualTo(mvcResultString3);
+    }
+
+    @DisplayName("Request Home page by not authenticated user")
+    @Test
+    void requestHomePage_NotAuthenticated() throws Exception {
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/"))
+                .andExpect(status().is3xxRedirection());
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/books"))
+                .andExpect(status().is3xxRedirection());
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/books/"))
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @DisplayName("Request Home page by Anonymous user")
+    @Test
+    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    void requestHomePage_Anonymous() throws Exception {
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/"))
+                .andExpect(status().isOk());
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/books"))
+                .andExpect(status().isOk());
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/books/"))
+                .andExpect(status().isOk());
+    }
+
+    @DisplayName("Request Home page by authenticated non-Admin user")
+    @Test
+    @WithMockUser(authorities = {"ROLE_COMMENTER", "ROLE_READER"})
+    void requestHomePage_nonAdmin() throws Exception {
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/"))
+                .andExpect(status().isOk());
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/books"))
+                .andExpect(status().isOk());
+
+        this.mockMvc
+                .perform(MockMvcRequestBuilders.get("/books/"))
+                .andExpect(status().isOk());
     }
 }

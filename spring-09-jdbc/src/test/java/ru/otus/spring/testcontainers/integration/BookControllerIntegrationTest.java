@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.otus.spring.testcontainers.AbstractBaseContainer;
@@ -22,7 +23,8 @@ class BookControllerIntegrationTest extends AbstractBaseContainer {
 
     @DisplayName("Request Book page")
     @Test
-    void find() throws Exception {
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    void requestBookPage() throws Exception {
 
         long bookId = 1;
 
@@ -30,5 +32,37 @@ class BookControllerIntegrationTest extends AbstractBaseContainer {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("<html")))
                 .andExpect(content().string(containsString("/html>")));
+    }
+
+    @DisplayName("Request Book page by not authenticated user")
+    @Test
+    void requestBookPage_NotAuthenticated() throws Exception {
+
+        long bookId = 1;
+
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId))
+                .andExpect(status().is3xxRedirection());
+    }
+
+    @DisplayName("Request Book page by Anonymous user")
+    @Test
+    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    void requestBookPage_Anonymous() throws Exception {
+
+        long bookId = 1;
+
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId))
+                .andExpect(status().isOk());
+    }
+
+    @DisplayName("Request Book page by non-Admin user")
+    @Test
+    @WithMockUser(authorities = {"ROLE_COMMENTER", "ROLE_READER"})
+    void requestBookPage_nonAdmin() throws Exception {
+
+        long bookId = 1;
+
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId))
+                .andExpect(status().isOk());
     }
 }

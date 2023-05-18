@@ -1,6 +1,15 @@
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" lang="en">
-
 <div th:fragment="top" class="top-panel">
-    <div class="app-name"><span th:utext="#{app-name}"></span></div>
-    <th:block th:insert="~{fragments/i18n::i18n}"/>
+    <div class="app-name" onclick="location.href='/'" style="cursor:pointer;">
+        <span th:utext="#{app-name}"></span>
+    </div>
+    <div class="user-panel">
+        <div class="user-i18n">
+            <th:block th:insert="~{fragments/i18n::i18n}"/>
+        </div>
+        <div class="user-info">
+            <span th:text="#{username} + ': ' + ${username}"></span>
+            <span th:text="#{roles} + ': ' + ${roles}"></span>
+            <a th:href="@{/logout}"><span th:utext="#{logout}"></span></a>
+        </div>
+    </div>
 </div>

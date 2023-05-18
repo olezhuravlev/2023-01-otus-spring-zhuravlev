@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.spring.dto.BookDto;
@@ -49,6 +50,7 @@ class BookRestControllerIntegrationTest extends AbstractBaseContainer {
     @DisplayName("Save Book")
     @Test
     @Transactional
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
     void saveBook() {
 
         // Initial sequence set to 1000.
@@ -73,9 +75,66 @@ class BookRestControllerIntegrationTest extends AbstractBaseContainer {
         assertThat(bookAfter).isPresent();
     }
 
+    @DisplayName("Save Book by not authenticated user")
+    @Test
+    @Transactional
+    void saveBook_NotAuthenticated() {
+
+        // Initial sequence set to 1000.
+        long initialSequenceId = 1000;
+
+        Book newBook = new Book(initialSequenceId, "New test book", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), new ArrayList<>());
+        BookDto source = BookDto.toDto(newBook);
+
+        webTestClient
+                .put().uri("/books")
+                .bodyValue(source)
+                .exchange()
+                .expectStatus().is3xxRedirection();
+    }
+
+    @DisplayName("Save Book by Anonymous user")
+    @Test
+    @Transactional
+    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    void saveBook_Anonymous() {
+
+        // Initial sequence set to 1000.
+        long initialSequenceId = 1000;
+
+        Book newBook = new Book(initialSequenceId, "New test book", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), new ArrayList<>());
+        BookDto source = BookDto.toDto(newBook);
+
+        webTestClient
+                .put().uri("/books")
+                .bodyValue(source)
+                .exchange()
+                .expectStatus().is4xxClientError();
+    }
+
+    @DisplayName("Save Book by authenticated non-Admin user")
+    @Test
+    @Transactional
+    @WithMockUser(authorities = {"ROLE_COMMENTER", "ROLE_READER"})
+    void saveBook_nonAdmin() {
+
+        // Initial sequence set to 1000.
+        long initialSequenceId = 1000;
+
+        Book newBook = new Book(initialSequenceId, "New test book", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), new ArrayList<>());
+        BookDto source = BookDto.toDto(newBook);
+
+        webTestClient
+                .put().uri("/books")
+                .bodyValue(source)
+                .exchange()
+                .expectStatus().is4xxClientError();
+    }
+
     @DisplayName("Delete Book by ID")
     @Test
     @Transactional
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
     void deleteBookById() {
 
         long bookId = 1;
@@ -106,5 +165,46 @@ class BookRestControllerIntegrationTest extends AbstractBaseContainer {
         // All comments of the removed book must be also deleted.
         Optional<BookComment> bookCommentAfter1 = bookCommentRepo.findById(commentId1);
         assertThat(bookCommentAfter1).isNotPresent();
+    }
+
+    @DisplayName("Delete Book by ID by not authenticated user")
+    @Test
+    @Transactional
+    void deleteBookById_NotAuthenticated() {
+
+        long bookId = 1;
+
+        webTestClient
+                .delete().uri(String.format("/books/%s", bookId))
+                .exchange()
+                .expectStatus().is3xxRedirection();
+    }
+
+    @DisplayName("Delete Book by ID by Anonymous user")
+    @Test
+    @Transactional
+    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    void deleteBookById_Anonymous() {
+
+        long bookId = 1;
+
+        webTestClient
+                .delete().uri(String.format("/books/%s", bookId))
+                .exchange()
+                .expectStatus().is4xxClientError();
+    }
+
+    @DisplayName("Delete Book by ID by non-Admin user")
+    @Test
+    @Transactional
+    @WithMockUser(authorities = {"ROLE_COMMENTER", "ROLE_READER"})
+    void deleteBookById_nonAdmin() {
+
+        long bookId = 1;
+
+        webTestClient
+                .delete().uri(String.format("/books/%s", bookId))
+                .exchange()
+                .expectStatus().is4xxClientError();
     }
 }

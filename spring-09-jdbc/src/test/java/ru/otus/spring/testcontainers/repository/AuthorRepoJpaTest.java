@@ -31,14 +31,14 @@ public class AuthorRepoJpaTest extends AbstractBaseContainer {
 
     @DisplayName("Retrieve all authors from DB")
     @Test
-    void find() {
+    void findAllAuthors() {
         List<Author> authors = authorRepo.findAll();
         assertThat(authors).containsExactlyInAnyOrderElementsOf(EXPECTED_AUTHORS);
     }
 
     @DisplayName("Retrieve author by ID")
     @Test
-    void findById() {
+    void findAuthorById() {
         long authorId = 1;
         Optional<Author> author = authorRepo.findById(authorId);
         assertThat(author).contains(EXPECTED_AUTHORS.get(0));

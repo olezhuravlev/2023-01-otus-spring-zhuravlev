@@ -1,10 +1,15 @@
 package ru.otus.spring.controller;
 
 import org.hibernate.Hibernate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.CurrentSecurityContext;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.thymeleaf.util.StringUtils;
 import ru.otus.spring.config.AppProps;
 import ru.otus.spring.dto.BookCommentDto;
 import ru.otus.spring.dto.BookDto;
@@ -14,6 +19,7 @@ import ru.otus.spring.model.BookComment;
 import ru.otus.spring.model.Genre;
 import ru.otus.spring.service.ApiGate;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -29,7 +35,7 @@ public class BookController {
     }
 
     @GetMapping(value = "/books/{bookId}")
-    public String getBookById(@PathVariable("bookId") long bookId, Model model) {
+    public String getBookById(@PathVariable("bookId") long bookId, Model model, @CurrentSecurityContext SecurityContext securityContext) {
 
         Book book = apiGate.getBookById(bookId).orElseThrow(NoSuchElementException::new);
 
@@ -46,6 +52,11 @@ public class BookController {
 
         BookCommentDto blankBookCommentDto = new BookCommentDto(appProps.emptyItemId(), appProps.emptyItemId(), "?");
         model.addAttribute("blankBookCommentDto", blankBookCommentDto);
+
+        Authentication authentication = securityContext.getAuthentication();
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+        model.addAttribute("username", authentication.getName());
+        model.addAttribute("roles", StringUtils.join(authorities, ","));
 
         return "bookForm";
     }

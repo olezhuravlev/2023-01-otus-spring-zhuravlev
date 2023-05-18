@@ -5,9 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.otus.spring.component.ModelAndViewPopulator;
+import ru.otus.spring.config.ApplicationConfig;
+import ru.otus.spring.config.SecurityConfig;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
 import ru.otus.spring.model.BookComment;
@@ -15,6 +19,7 @@ import ru.otus.spring.model.Genre;
 import ru.otus.spring.service.ApiGate;
 import ru.otus.spring.service.SysInfoService;
 
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @WebMvcTest(HomePageController.class)
+@Import({ApplicationConfig.class, SecurityConfig.class})
 public class HomePageControllerTest {
 
     @Autowired
@@ -37,6 +43,9 @@ public class HomePageControllerTest {
 
     @MockBean
     private SysInfoService sysInfoService;
+
+    @MockBean
+    private DataSource dataSource;
 
     private static final List<Author> EXPECTED_AUTHORS = new ArrayList<>();
     private static final List<Genre> EXPECTED_GENRES = new ArrayList<>();
@@ -64,7 +73,8 @@ public class HomePageControllerTest {
     }
 
     @Test
-    void testGetHome() throws Exception {
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    void getBooksWithAuthorAndGenre() throws Exception {
 
         String url1 = "/";
         String url2 = "/books";
