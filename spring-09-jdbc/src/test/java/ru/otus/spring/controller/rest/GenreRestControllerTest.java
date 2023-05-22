@@ -6,22 +6,26 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.otus.spring.component.ModelAndViewPopulator;
+import ru.otus.spring.config.SecurityConfig;
 import ru.otus.spring.model.Genre;
 import ru.otus.spring.service.ApiGate;
 import ru.otus.spring.service.SysInfoService;
 
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(GenreRestController.class)
+@ContextConfiguration(classes = {SecurityConfig.class, GenreRestController.class})
 public class GenreRestControllerTest {
 
     @Autowired
@@ -36,6 +40,9 @@ public class GenreRestControllerTest {
     @MockBean
     private SysInfoService sysInfoService;
 
+    @MockBean
+    private DataSource dataSource;
+
     private static final List<Genre> EXPECTED_GENRES = new ArrayList<>();
 
     @BeforeAll
@@ -46,7 +53,8 @@ public class GenreRestControllerTest {
     }
 
     @Test
-    void testPostGenres() throws Exception {
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    void getGenres() throws Exception {
 
         given(apiGate.getGenres()).willReturn(EXPECTED_GENRES);
 

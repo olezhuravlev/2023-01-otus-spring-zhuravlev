@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.spring.dto.BookCommentDto;
@@ -30,6 +31,7 @@ class BookCommentRestControllerIntegrationTest extends AbstractBaseContainer {
     @DisplayName("Save Book Comment")
     @Test
     @Transactional
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
     void saveBookComment() {
 
         // Initial sequence set to 1000.
@@ -55,9 +57,89 @@ class BookCommentRestControllerIntegrationTest extends AbstractBaseContainer {
         assertThat(saved).contains(newBookComment);
     }
 
+    @DisplayName("Save Book Comment by not authenticated user")
+    @Test
+    @Transactional
+    void saveBookComment_NotAuthenticated() {
+
+        // Initial sequence set to 1000.
+        long initialSequenceId = 1000;
+        long bookId = 1;
+
+        BookComment newBookComment = new BookComment(initialSequenceId, "New test book comment", bookId);
+        BookCommentDto source = BookCommentDto.toDto(newBookComment);
+
+        webTestClient
+                .put().uri("/comments")
+                .bodyValue(source)
+                .exchange()
+                .expectStatus().is3xxRedirection();
+    }
+
+    @DisplayName("Save Book Comment by Anonymous user")
+    @Test
+    @Transactional
+    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    void saveBookComment_Anonymous() {
+
+        // Initial sequence set to 1000.
+        long initialSequenceId = 1000;
+        long bookId = 1;
+
+        BookComment newBookComment = new BookComment(initialSequenceId, "New test book comment", bookId);
+        BookCommentDto source = BookCommentDto.toDto(newBookComment);
+
+        webTestClient
+                .put().uri("/comments")
+                .bodyValue(source)
+                .exchange()
+                .expectStatus().is4xxClientError();
+    }
+
+    @DisplayName("Save Book Comment by Commenter user")
+    @Test
+    @Transactional
+    @WithMockUser(authorities = {"ROLE_COMMENTER"})
+    void saveBookComment_Commenter() {
+
+        // Initial sequence set to 1000.
+        long initialSequenceId = 1000;
+        long bookId = 1;
+
+        BookComment newBookComment = new BookComment(initialSequenceId, "New test book comment", bookId);
+        BookCommentDto source = BookCommentDto.toDto(newBookComment);
+
+        webTestClient
+                .put().uri("/comments")
+                .bodyValue(source)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    @DisplayName("Save Book Comment by Reader user")
+    @Test
+    @Transactional
+    @WithMockUser(authorities = {"ROLE_READER"})
+    void saveBookComment_Reader() {
+
+        // Initial sequence set to 1000.
+        long initialSequenceId = 1000;
+        long bookId = 1;
+
+        BookComment newBookComment = new BookComment(initialSequenceId, "New test book comment", bookId);
+        BookCommentDto source = BookCommentDto.toDto(newBookComment);
+
+        webTestClient
+                .put().uri("/comments")
+                .bodyValue(source)
+                .exchange()
+                .expectStatus().is4xxClientError();
+    }
+
     @DisplayName("Delete Book Comment by ID")
     @Test
     @Transactional
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
     void deleteBookCommentById() {
 
         long commentId = 1;
@@ -80,5 +162,46 @@ class BookCommentRestControllerIntegrationTest extends AbstractBaseContainer {
         // Check that the item doesn't exist in DB anymore.
         Optional<BookComment> bookCommentAfter = bookCommentRepo.findById(commentId);
         assertThat(bookCommentAfter).isNotPresent();
+    }
+
+    @DisplayName("Delete Book Comment by ID by not authenticated user")
+    @Test
+    @Transactional
+    void deleteBookCommentById_NotAuthenticated() {
+
+        long commentId = 1;
+
+        webTestClient
+                .delete().uri(String.format("/comments/%s", commentId))
+                .exchange()
+                .expectStatus().is3xxRedirection();
+    }
+
+    @DisplayName("Delete Book Comment by ID by Anonymous user")
+    @Test
+    @Transactional
+    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    void deleteBookCommentById_Anonymous() {
+
+        long commentId = 1;
+
+        webTestClient
+                .delete().uri(String.format("/comments/%s", commentId))
+                .exchange()
+                .expectStatus().is4xxClientError();
+    }
+
+    @DisplayName("Delete Book Comment by ID by non-Admin user")
+    @Test
+    @Transactional
+    @WithMockUser(authorities = {"ROLE_COMMENTER", "ROLE_READER"})
+    void deleteBookCommentById_nonAdmin() {
+
+        long commentId = 1;
+
+        webTestClient
+                .delete().uri(String.format("/comments/%s", commentId))
+                .exchange()
+                .expectStatus().is4xxClientError();
     }
 }

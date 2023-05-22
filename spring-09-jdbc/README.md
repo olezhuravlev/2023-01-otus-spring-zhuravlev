@@ -9,18 +9,18 @@
 
 ````yaml
 $ docker-compose up -d
-  [ + ] Running 5/5
-  ✔ webapp-pg 4 layers [⣿⣿⣿⣿]      0B/0B      Pulled    10.1s
-  ✔ 38a980f2cc8a Already exists                           0.0s
-  ✔ de849f1cfbe6 Already exists                           0.0s
-  ✔ a7203ca35e75 Already exists                           0.0s
-  ✔ 630b03514285 Pull complete                            7.2s
-  [ + ] Running 5/5
-  ✔ Network spring-09-jdbc_default  Created               0.1s
-  ✔ Container docker-hoster         Started               0.6s
-  ✔ Container postgres              Healthy              31.5s
-  ✔ Container webapp-pg             Started              31.6s
-  ✔ Container pgadmin               Started
+[ + ] Running 5/5
+✔ webapp-pg 4 layers [⣿⣿⣿⣿]      0B/0B      Pulled    10.1s
+✔ 38a980f2cc8a Already exists                           0.0s
+✔ de849f1cfbe6 Already exists                           0.0s
+✔ a7203ca35e75 Already exists                           0.0s
+✔ 630b03514285 Pull complete                            7.2s
+[ + ] Running 5/5
+✔ Network spring-09-jdbc_default  Created               0.1s
+✔ Container docker-hoster         Started               0.6s
+✔ Container postgres              Healthy              31.5s
+✔ Container webapp-pg             Started              31.6s
+✔ Container pgadmin               Started
 ````
 
 </details>
@@ -74,9 +74,28 @@ $ java -jar webapp-pg.jar
 Запуcтить main-класс [Application.java](src/main/java/ru/otus/spring/Application.java)
 </details>
 
-### 2. Доступ к приложению
+### 2. Разграничение доступа с помощью Spring Security
+
+Введены следующие роли:
+
+- ROLE_ADMIN ("admin/admin"): может выполнять любые операции;
+- ROLE_COMMENTER ("commenter/commenter"): может выполнять все операции чтения, а также добавлять (но не удалять)
+  комментарии;
+- ROLE_READER ("reader/reader"): может выполнять только операции чтения.
+
+| User/Password       | Role/Authority | ALL | COMMENT | READ |
+|:--------------------|:---------------|:---:|:-------:|:----:|
+| Admin/admin         | ROLE_ADMIN     |  +  |    +    |  +   |
+| Commenter/commenter | ROLE_COMMENTER |     |    +    |  +   |
+| Reader/reader       | ROLE_READER    |     |         |  +   |
+
+Незарегистрированный пользователь имеет доступ только к странице логина.
+
+### 3. Доступ к приложению
 
 Запущенное веб-приложение доступно на порту `8080` ([application.yaml](src/main/resources/application.yaml)).
+
+![login-page.png](login-page.png)
 
 ![library-app.png](library-app.png)
 

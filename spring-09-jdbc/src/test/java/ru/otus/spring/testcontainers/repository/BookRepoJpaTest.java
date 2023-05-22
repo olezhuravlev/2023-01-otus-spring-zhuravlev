@@ -62,7 +62,7 @@ public class BookRepoJpaTest extends AbstractBaseContainer {
     @DisplayName("Retrieve all books from DB")
     @Test
     @Transactional
-    void findAll() {
+    void findAllBooks() {
         List<Book> books = bookRepo.findAllWithAuthorAndGenre();
         assertThat(books).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(EXPECTED_BOOKS);
     }
@@ -70,7 +70,7 @@ public class BookRepoJpaTest extends AbstractBaseContainer {
     @DisplayName("Retrieve book by ID")
     @Test
     @Transactional
-    void findById() {
+    void findBookById() {
 
         long bookId = 1;
 
@@ -101,7 +101,7 @@ public class BookRepoJpaTest extends AbstractBaseContainer {
     @DisplayName("Save book")
     @Test
     @Transactional
-    void save() {
+    void saveBook() {
 
         // Initial sequence set to 1000.
         long initialSequenceId = 1000;
@@ -123,7 +123,7 @@ public class BookRepoJpaTest extends AbstractBaseContainer {
     @DisplayName("Delete book by ID")
     @Test
     @Transactional
-    void delete() {
+    void deleteBookById() {
 
         long bookId = 1;
 

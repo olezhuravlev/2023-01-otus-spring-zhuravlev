@@ -5,11 +5,16 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.web.servlet.ModelAndView;
 import ru.otus.spring.component.ModelAndViewPopulator;
+import ru.otus.spring.config.SecurityConfig;
 import ru.otus.spring.service.SysInfoService;
+
+import javax.sql.DataSource;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -17,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
 @WebMvcTest(AppErrorController.class)
+@ContextConfiguration(classes = {SecurityConfig.class, AppErrorController.class})
 class AppErrorControllerTest {
 
     @Autowired
@@ -28,8 +34,12 @@ class AppErrorControllerTest {
     @MockBean
     private SysInfoService sysInfoService;
 
+    @MockBean
+    private DataSource dataSource;
+
     @Test
-    void testError() throws Exception {
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    void fillError404() throws Exception {
 
         String expectedViewName = "error/404";
 

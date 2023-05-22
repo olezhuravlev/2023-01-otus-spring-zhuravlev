@@ -31,14 +31,14 @@ public class GenreRepoJpaTest extends AbstractBaseContainer {
 
     @DisplayName("Retrieve all genres from DB")
     @Test
-    void find() {
+    void findAllGenres() {
         List<Genre> genres = genreRepo.findAll();
         assertThat(genres).containsExactlyInAnyOrderElementsOf(EXPECTED_GENRES);
     }
 
     @DisplayName("Retrieve genre by ID")
     @Test
-    void findById() {
+    void findGenreById() {
         long genreId = 1;
         Optional<Genre> genre = genreRepo.findById(genreId);
         assertThat(genre).contains(EXPECTED_GENRES.get(0));

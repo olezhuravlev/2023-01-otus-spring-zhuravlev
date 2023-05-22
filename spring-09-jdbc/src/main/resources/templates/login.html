@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" lang="en">
+
+<head>
+    <title>Please Log In</title>
+    <style>
+
+        .container {
+            display: flex;
+            background-color: #fffdeb;
+            margin: 10% 0 0 2%;
+            padding-left: 5%;
+        }
+
+        .form-signin {
+            display: flex;
+            flex-flow: column wrap;
+            justify-content: space-between;
+            margin: 20px;
+            row-gap: 10px;
+        }
+
+        .form-signin-header {
+            font-size: 40px;
+        }
+
+        .form-signin-header-message-logout {
+            font-size: 20px;
+            background-color: #c4ffab;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0 10px 0;
+        }
+
+        .form-signin-header-message-error {
+            font-size: 20px;
+            background-color: #ffc7c7;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0 10px 0;
+        }
+
+        .form-signin-username input[type="text"] {
+            font-size: 20px;
+            border: 1px #efefef solid;
+            border-radius: 2px 2px 2px 2px;
+            padding: 5px;
+            width: 100%;
+        }
+
+        .form-signin-password input[type="password"] {
+            font-size: 20px;
+            border: 1px #efefef solid;
+            border-radius: 2px 2px 2px 2px;
+            padding: 5px;
+            width: 100%;
+        }
+
+        .form-signin-rememberme {
+            font-size: 16px;
+        }
+
+        .form-signin-button-submit {
+            height: 32px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <form class="form-signin" method="post" th:action="@{/login}">
+        <div class="form-signin-header">
+            <span th:utext="#{signin-message}"></span>
+        </div>
+        <div class="form-signin-header-message-logout" th:if="${param.logout}" th:utext="#{has-logout}"></div>
+        <div class="form-signin-header-message-error" th:if="${param.error}" th:utext="#{has-error}"></div>
+        <div class="form-signin-username">
+            <input type="text" id="username" name="username" th:placeholder="#{username}"
+                   required="" autofocus="">
+        </div>
+        <div class="form-signin-password">
+            <input type="password" id="password" name="password" th:placeholder="#{password}"
+                   required="">
+        </div>
+        <div class="form-signin-rememberme">
+            <input type="checkbox" name="remember-me">
+            <span th:utext="#{remember-me}"></span>
+        </div>
+        <button class="form-signin-button-submit" type="submit" th:utext="#{signin}"></button>
+    </form>
+</div>
+</body>
+</html>

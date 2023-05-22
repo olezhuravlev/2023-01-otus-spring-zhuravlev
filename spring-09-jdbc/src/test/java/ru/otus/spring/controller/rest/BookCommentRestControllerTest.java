@@ -7,15 +7,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ru.otus.spring.component.ModelAndViewPopulator;
+import ru.otus.spring.config.SecurityConfig;
 import ru.otus.spring.dto.BookCommentDto;
 import ru.otus.spring.model.BookComment;
 import ru.otus.spring.service.ApiGate;
 import ru.otus.spring.service.SysInfoService;
 
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BookCommentRestController.class)
+@ContextConfiguration(classes = {SecurityConfig.class, BookCommentRestController.class})
 public class BookCommentRestControllerTest {
 
     @Autowired
@@ -41,6 +46,9 @@ public class BookCommentRestControllerTest {
     @MockBean
     private SysInfoService sysInfoService;
 
+    @MockBean
+    private DataSource dataSource;
+
     private static final List<BookComment> EXPECTED_COMMENTS = new ArrayList<>();
 
     @BeforeAll
@@ -51,7 +59,8 @@ public class BookCommentRestControllerTest {
     }
 
     @Test
-    void testPutComment() throws Exception {
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    void saveBookComment() throws Exception {
 
         long commentId = 1;
 
@@ -71,7 +80,8 @@ public class BookCommentRestControllerTest {
     }
 
     @Test
-    void testDeleteComments() throws Exception {
+    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    void deleteBookCommentById() throws Exception {
 
         long commentId = 1;
 
