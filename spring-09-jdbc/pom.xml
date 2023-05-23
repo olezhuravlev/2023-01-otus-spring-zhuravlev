@@ -24,6 +24,8 @@
         <minimal.maven.version>3.8.7</minimal.maven.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <testcontainers.version>1.18.1</testcontainers.version>
+        <ehcache-core.version>2.6.11</ehcache-core.version>
+        <springdoc-openapi-ui-version>1.7.0</springdoc-openapi-ui-version>
     </properties>
 
     <dependencyManagement>
@@ -103,7 +105,30 @@
             <artifactId>spring-security-test</artifactId>
         </dependency>
 
-        <!-- Just for using WebClient in tests -->
+        <!-- Spring Security ACL -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-acl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.sf.ehcache</groupId>
+            <artifactId>ehcache-core</artifactId>
+            <version>${ehcache-core.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+        </dependency>
+
+        <!-- For Swagger -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-ui</artifactId>
+            <version>${springdoc-openapi-ui-version}</version>
+        </dependency>
+
+        <!-- For using WebClient in tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
