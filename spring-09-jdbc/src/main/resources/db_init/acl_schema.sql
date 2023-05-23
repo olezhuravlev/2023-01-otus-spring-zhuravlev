@@ -53,3 +53,13 @@ ALTER TABLE acl_entry
     ADD FOREIGN KEY (acl_object_identity) REFERENCES acl_object_identity (id);
 ALTER TABLE acl_entry
     ADD FOREIGN KEY (sid) REFERENCES acl_sid (id);
+
+-- Query to show imposed restrictions:
+-- SELECT s.id, s.sid, s.principal,
+--        e.id rule_id, e.ace_order, e.mask, e.granting, e.audit_success, e.audit_failure,
+--        c.class, i.object_id_identity class_obj_id, i.parent_object, i.entries_inheriting
+-- FROM acl_sid s
+--          LEFT JOIN acl_entry e ON s.id=e.sid
+--          LEFT JOIN acl_object_identity i ON s.id=i.owner_sid AND i.id=e.acl_object_identity
+--          LEFT JOIN acl_class c ON i.object_id_class=c.id
+-- ORDER BY s.id, e.id;
