@@ -7,6 +7,8 @@ spring:
     init:
       mode: always
       data-locations:
+        - classpath:db_init/acl_schema.sql
+        - classpath:db_init/acl_permissions.sql
         - classpath:db_init/genres.sql
         - classpath:db_init/authors.sql
         - classpath:db_init/books.sql

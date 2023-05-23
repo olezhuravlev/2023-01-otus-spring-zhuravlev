@@ -198,4 +198,5 @@ VALUES (1, 'Agatha Christie'),
        (197, 'André Aciman'),
        (198, 'Zora Neale Hurston'),
        (199, 'Zoraida Córdova'),
-       (200, 'Adam Silvera');
+       (200, 'Adam Silvera'),
+       (201, 'Администратор');

@@ -18,6 +18,7 @@ import ru.otus.spring.dto.BookCommentDto;
 import ru.otus.spring.model.BookComment;
 import ru.otus.spring.service.ApiGate;
 import ru.otus.spring.service.SysInfoService;
+import ru.otus.spring.testcontainers.WithMockAdmin;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -59,7 +60,7 @@ public class BookCommentRestControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void saveBookComment() throws Exception {
 
         long commentId = 1;
@@ -80,7 +81,7 @@ public class BookCommentRestControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void deleteBookCommentById() throws Exception {
 
         long commentId = 1;

@@ -34,7 +34,7 @@ services:
       postgres:
         condition: service_healthy
   webapp-pg:
-    image: olezhuravlev/webapp-pg:2.1.0
+    image: olezhuravlev/webapp-pg:3.1.0
     container_name: webapp-pg
     #    ports:
     #      - 8080:8080

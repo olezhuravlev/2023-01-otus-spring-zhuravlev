@@ -18,6 +18,7 @@ import ru.otus.spring.model.BookComment;
 import ru.otus.spring.model.Genre;
 import ru.otus.spring.service.ApiGate;
 import ru.otus.spring.service.SysInfoService;
+import ru.otus.spring.testcontainers.WithMockAdmin;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class HomePageControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void getBooksWithAuthorAndGenre() throws Exception {
 
         String url1 = "/";

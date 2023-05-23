@@ -1,10 +1,12 @@
 package ru.otus.spring.testcontainers.repository;
 
 import org.hibernate.Hibernate;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.model.Book;
@@ -14,8 +16,11 @@ import ru.otus.spring.repository.AuthorRepo;
 import ru.otus.spring.repository.BookRepo;
 import ru.otus.spring.repository.GenreRepo;
 import ru.otus.spring.testcontainers.AbstractBaseContainer;
+import ru.otus.spring.testcontainers.WithMockAdmin;
+import ru.otus.spring.testcontainers.WithMockNonAdmin;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -59,18 +64,30 @@ public class BookRepoJpaTest extends AbstractBaseContainer {
         EXPECTED_BOOKS.add(new Book(3, "Test book 3", EXPECTED_AUTHORS.get(2), EXPECTED_GENRES.get(2), singletonList(EXPECTED_COMMENTS.get(2))));
     }
 
-    @DisplayName("Retrieve all books from DB")
+    @DisplayName("Retrieve all books from DB by 'Admin' user")
     @Test
     @Transactional
-    void findAllBooks() {
+    @WithMockAdmin
+    void findAllBooksAdmin() {
         List<Book> books = bookRepo.findAllWithAuthorAndGenre();
         assertThat(books).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(EXPECTED_BOOKS);
     }
 
-    @DisplayName("Retrieve book by ID")
+    @DisplayName("Retrieve all books from DB by non-admin user")
     @Test
     @Transactional
-    void findBookById() {
+    @WithMockNonAdmin
+    void findAllBooksNonAdmin() {
+        List<Book> books = bookRepo.findAllWithAuthorAndGenre();
+        List<Book> expected = Arrays.asList(EXPECTED_BOOKS.get(1), EXPECTED_BOOKS.get(2));
+        assertThat(books).usingRecursiveComparison().ignoringCollectionOrder().isEqualTo(expected);
+    }
+
+    @DisplayName("Retrieve book by ID by 'Admin' user")
+    @Test
+    @Transactional
+    @WithMockAdmin
+    void findBookByIdAdmin() {
 
         long bookId = 1;
 
@@ -82,6 +99,15 @@ public class BookRepoJpaTest extends AbstractBaseContainer {
         foundBook.setAuthor(Hibernate.unproxy(foundBook.getAuthor(), Author.class));
         foundBook.setGenre(Hibernate.unproxy(foundBook.getGenre(), Genre.class));
         assertThat(foundBook).usingRecursiveComparison().isEqualTo(expectedBook);
+    }
+
+    @DisplayName("Retrieve book by ID by non-admin user")
+    @Test
+    @Transactional
+    @WithMockNonAdmin
+    void findBookByIdNonAdmin() {
+        long bookId = 1;
+        Assertions.assertThrows(AccessDeniedException.class, () -> bookRepo.findById(bookId));
     }
 
     @DisplayName("Check if book exists")
@@ -101,6 +127,7 @@ public class BookRepoJpaTest extends AbstractBaseContainer {
     @DisplayName("Save book")
     @Test
     @Transactional
+    @WithMockAdmin
     void saveBook() {
 
         // Initial sequence set to 1000.
@@ -123,6 +150,7 @@ public class BookRepoJpaTest extends AbstractBaseContainer {
     @DisplayName("Delete book by ID")
     @Test
     @Transactional
+    @WithMockAdmin
     void deleteBookById() {
 
         long bookId = 1;

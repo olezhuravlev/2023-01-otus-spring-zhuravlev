@@ -6,11 +6,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.otus.spring.testcontainers.AbstractBaseContainer;
+import ru.otus.spring.testcontainers.WithMockAdmin;
+import ru.otus.spring.testcontainers.WithMockAnonymous;
+import ru.otus.spring.testcontainers.WithMockNonAdmin;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -23,7 +25,7 @@ class HomePageControllerIntegrationTest extends AbstractBaseContainer {
 
     @DisplayName("Request Home page")
     @Test
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void requestHomePage() throws Exception {
 
         MvcResult mvcResult1 = this.mockMvc
@@ -63,7 +65,7 @@ class HomePageControllerIntegrationTest extends AbstractBaseContainer {
 
     @DisplayName("Request Home page by Anonymous user")
     @Test
-    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    @WithMockAnonymous
     void requestHomePage_Anonymous() throws Exception {
 
         this.mockMvc
@@ -81,7 +83,7 @@ class HomePageControllerIntegrationTest extends AbstractBaseContainer {
 
     @DisplayName("Request Home page by authenticated non-Admin user")
     @Test
-    @WithMockUser(authorities = {"ROLE_COMMENTER", "ROLE_READER"})
+    @WithMockNonAdmin
     void requestHomePage_nonAdmin() throws Exception {
 
         this.mockMvc

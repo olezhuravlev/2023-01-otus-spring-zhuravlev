@@ -14,6 +14,8 @@ spring:
     init:
       mode: always
       data-locations:
+        - classpath:db_init/acl_schema.sql
+        - classpath:db_init/acl_permissions.sql
         - classpath:db_init/users.sql
         - classpath:db_init/genres.sql
         - classpath:db_init/authors.sql
@@ -37,3 +39,8 @@ logging:
 #        type: trace
 server:
   port: 8080
+
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+    path: swag

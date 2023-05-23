@@ -9,6 +9,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.otus.spring.testcontainers.AbstractBaseContainer;
+import ru.otus.spring.testcontainers.WithMockAdmin;
+import ru.otus.spring.testcontainers.WithMockAnonymous;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -23,7 +25,7 @@ class AppErrorControllerIntegrationTest extends AbstractBaseContainer {
 
     @DisplayName("Request error page")
     @Test
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void requestErrorPage() throws Exception {
 
         this.mockMvc.perform(MockMvcRequestBuilders.get("/error"))
@@ -40,7 +42,7 @@ class AppErrorControllerIntegrationTest extends AbstractBaseContainer {
 
     @DisplayName("Request error page by Anonymous user")
     @Test
-    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    @WithMockAnonymous
     void requestErrorPage_Anonymous() throws Exception {
         this.mockMvc.perform(MockMvcRequestBuilders.get("/error")).andExpect(status().isOk());
     }
