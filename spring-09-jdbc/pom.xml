@@ -25,7 +25,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <testcontainers.version>1.18.1</testcontainers.version>
         <ehcache-core.version>2.6.11</ehcache-core.version>
-        <springdoc-openapi-ui-version>1.7.0</springdoc-openapi-ui-version>
+        <springdoc-openapi-version>2.1.0</springdoc-openapi-version>
     </properties>
 
     <dependencyManagement>
@@ -124,8 +124,8 @@
         <!-- For Swagger -->
         <dependency>
             <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>${springdoc-openapi-ui-version}</version>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc-openapi-version}</version>
         </dependency>
 
         <!-- For using WebClient in tests -->

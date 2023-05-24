@@ -39,3 +39,8 @@ logging:
 #        type: trace
 server:
   port: 8080
+
+springdoc:
+  swagger-ui:
+    disable-swagger-default-url: true
+    path: swag
