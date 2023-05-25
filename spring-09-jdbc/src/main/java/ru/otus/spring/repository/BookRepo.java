@@ -1,5 +1,6 @@
 package ru.otus.spring.repository;
 
+import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.access.prepost.PreFilter;
 import org.springframework.security.core.parameters.P;
@@ -22,6 +23,7 @@ public interface BookRepo {
     //@PostAuthorize("@myAuth.decide(#root)") // Works!
     //@PreFilter(filterTarget = "", value = "@myAuth.decide(#filterObject)") // Filter target must be a collection, array, map or stream type!
     //@PostFilter("@myAuth.decide(#root)") // Invoked custom
+    @PostFilter("hasPermission(filterObject, 'READ')")
     List<Book> findAllWithAuthorAndGenre();
 
     @PreAuthorize("hasPermission(#id, 'READ')")

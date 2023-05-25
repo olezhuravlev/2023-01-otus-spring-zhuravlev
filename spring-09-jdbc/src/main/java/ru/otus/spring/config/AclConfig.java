@@ -2,7 +2,10 @@ package ru.otus.spring.config;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.Advisor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.cache.concurrent.ConcurrentMapCache;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Role;
@@ -11,6 +14,15 @@ import org.springframework.security.access.expression.method.DefaultMethodSecuri
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.acls.AclPermissionCacheOptimizer;
+import org.springframework.security.acls.AclPermissionEvaluator;
+import org.springframework.security.acls.domain.AclAuthorizationStrategyImpl;
+import org.springframework.security.acls.domain.ConsoleAuditLogger;
+import org.springframework.security.acls.domain.DefaultPermissionGrantingStrategy;
+import org.springframework.security.acls.domain.SpringCacheBasedAclCache;
+import org.springframework.security.acls.jdbc.BasicLookupStrategy;
+import org.springframework.security.acls.jdbc.JdbcMutableAclService;
+import org.springframework.security.acls.jdbc.LookupStrategy;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.authorization.method.AuthorizationManagerAfterMethodInterceptor;
@@ -18,13 +30,18 @@ import org.springframework.security.authorization.method.AuthorizationManagerBef
 import org.springframework.security.authorization.method.MethodInvocationResult;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import javax.sql.DataSource;
 import java.io.Serializable;
 import java.util.function.Supplier;
 
 @Configuration
 @EnableMethodSecurity(securedEnabled = true)
 public class AclConfig {
+
+    @Autowired
+    private DataSource dataSource;
 
     @Bean
     static RoleHierarchy roleHierarchy() {
@@ -36,11 +53,28 @@ public class AclConfig {
         return roleHierarchy;
     }
 
+//    @Bean
+//    static PermissionEvaluator permissionEvaluator() {
+//        return new PermissionEvaluator() {
+//            @Override
+//            public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
+//                return true;
+//            }
+//
+//            @Override
+//            public boolean hasPermission(Authentication authentication, Serializable targetId, String targetType, Object permission) {
+//                return true;
+//            }
+//        };
+//    }
+
     @Bean
-    static PermissionEvaluator permissionEvaluator() {
-        return new PermissionEvaluator() {
+    public PermissionEvaluator permissionEvaluator() {
+
+        return new AclPermissionEvaluator(aclService()) {
+
             @Override
-            public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
+            public boolean hasPermission(Authentication authentication, Object domainObject, Object permission) {
                 return true;
             }
 
@@ -50,13 +84,15 @@ public class AclConfig {
             }
         };
     }
+
     // We expose MethodSecurityExpressionHandler using a static method to ensure
     // that Spring publishes it before it initializes Spring Security’s method security @Configuration classes!
     @Bean
-    static MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
+    public MethodSecurityExpressionHandler expressionHandler() {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
         handler.setRoleHierarchy(roleHierarchy());
         handler.setPermissionEvaluator(permissionEvaluator());
+        handler.setPermissionCacheOptimizer(new AclPermissionCacheOptimizer(aclService()));
         return handler;
     }
 
@@ -107,66 +143,40 @@ public class AclConfig {
         return AuthorizationManagerAfterMethodInterceptor.postAuthorize(postAuthorizationManager());
     }
 
-    //AuthorizationManager API instead of metadata sources, config attributes, decision managers, and voters.
-//    @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
-//    @Autowired
-//    private DataSource dataSource;
-// ********************************************************************************
-// ********************************************************************************
-// ********************************************************************************
-// CACHE
-//    @Bean
-//    public EhCacheBasedAclCache aclCache() {
-//        return new EhCacheBasedAclCache(
-//                Objects.requireNonNull(aclEhCacheFactoryBean().getObject()),
-//                permissionGrantingStrategy(),
-//                aclAuthorizationStrategy()
-//        );
-//    }
-//
-//    @Bean
-//    public EhCacheFactoryBean aclEhCacheFactoryBean() {
-//        EhCacheFactoryBean ehCacheFactoryBean = new EhCacheFactoryBean();
-//        ehCacheFactoryBean.setCacheManager(aclCacheManager().getObject());
-//        ehCacheFactoryBean.setCacheName("aclCache");
-//        return ehCacheFactoryBean;
-//    }
-//
-//    @Bean
-//    public EhCacheManagerFactoryBean aclCacheManager() {
-//        return new EhCacheManagerFactoryBean();
-//    }
-//
-// ********************************************************************************
-// ********************************************************************************
-// ********************************************************************************
-// ACL
-//    @Bean
-//    public PermissionGrantingStrategy permissionGrantingStrategy() {
-//        return new DefaultPermissionGrantingStrategy(new ConsoleAuditLogger());
-//    }
-//
-//    @Bean
-//    public AclAuthorizationStrategy aclAuthorizationStrategy() {
-//        return new AclAuthorizationStrategyImpl(new SimpleGrantedAuthority("ROLE_EDITOR"));
-//    }
-//
-//    @Bean
-//    public MethodSecurityExpressionHandler defaultMethodSecurityExpressionHandler() {
-//        DefaultMethodSecurityExpressionHandler expressionHandler = new DefaultMethodSecurityExpressionHandler();
-//        AclPermissionEvaluator permissionEvaluator = new AclPermissionEvaluator(aclService());
-//        expressionHandler.setPermissionEvaluator(permissionEvaluator);
-//        expressionHandler.setPermissionCacheOptimizer(new AclPermissionCacheOptimizer(aclService()));
-//        return expressionHandler;
-//    }
-//
-//    @Bean
-//    public LookupStrategy lookupStrategy() {
-//        return new BasicLookupStrategy(dataSource, aclCache(), aclAuthorizationStrategy(), new ConsoleAuditLogger());
-//    }
-//
-//    @Bean
-//    public JdbcMutableAclService aclService() {
-//        return new JdbcMutableAclService(dataSource, lookupStrategy(), aclCache());
-//    }
+    @Bean
+    public ConcurrentMapCacheManager cacheManager() {
+        return new ConcurrentMapCacheManager();
+    }
+
+    @Bean
+    public ConcurrentMapCache userCacheBackend() {
+        return new ConcurrentMapCache("aclCache");
+    }
+
+    @Bean
+    public org.springframework.security.acls.model.PermissionGrantingStrategy permissionGrantingStrategy() {
+        return new DefaultPermissionGrantingStrategy(new ConsoleAuditLogger());
+    }
+
+    @Bean
+    public org.springframework.security.acls.domain.AclAuthorizationStrategy aclAuthorizationStrategy() {
+        return new AclAuthorizationStrategyImpl(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    }
+
+    @Bean
+    public SpringCacheBasedAclCache aclCache() {
+        return new SpringCacheBasedAclCache(userCacheBackend(), permissionGrantingStrategy(), aclAuthorizationStrategy());
+    }
+
+    // Provides high-performance ACL retrieval capabilities
+    @Bean
+    public LookupStrategy lookupStrategy() {
+        return new BasicLookupStrategy(dataSource, aclCache(), aclAuthorizationStrategy(), new ConsoleAuditLogger());
+    }
+
+    // Provides mutator capabilities.
+    @Bean
+    public JdbcMutableAclService aclService() {
+        return new JdbcMutableAclService(dataSource, lookupStrategy(), aclCache());
+    }
 }
