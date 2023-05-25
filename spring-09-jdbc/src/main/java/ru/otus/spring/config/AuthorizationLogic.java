@@ -8,6 +8,8 @@ public class AuthorizationLogic {
 
     // @PreAuthorize: Invoked BEFORE AuthorizationManager<MethodInvocation>
     // @PostAuthorize: Invoked AFTER AuthorizationManager<MethodInvocation>
+    // @PostFilter: Invoked for each returning item.
+    // @PreFilter: Not invoked - Filter target must be a collection, array, map or stream type!
     public boolean decide(MethodSecurityExpressionOperations obj1) {
         return true; // Invoked @PostFilter("@myAuth.decide(#root)")!
     }

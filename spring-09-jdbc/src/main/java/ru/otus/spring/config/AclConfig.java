@@ -6,20 +6,24 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Role;
+import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
-import org.springframework.security.authorization.method.*;
+import org.springframework.security.authorization.method.AuthorizationManagerAfterMethodInterceptor;
+import org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor;
+import org.springframework.security.authorization.method.MethodInvocationResult;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.Authentication;
 
+import java.io.Serializable;
 import java.util.function.Supplier;
 
 @Configuration
-@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true)
+@EnableMethodSecurity(securedEnabled = true)
 public class AclConfig {
 
     @Bean
@@ -32,12 +36,27 @@ public class AclConfig {
         return roleHierarchy;
     }
 
+    @Bean
+    static PermissionEvaluator permissionEvaluator() {
+        return new PermissionEvaluator() {
+            @Override
+            public boolean hasPermission(Authentication authentication, Object targetDomainObject, Object permission) {
+                return true;
+            }
+
+            @Override
+            public boolean hasPermission(Authentication authentication, Serializable targetId, String targetType, Object permission) {
+                return true;
+            }
+        };
+    }
     // We expose MethodSecurityExpressionHandler using a static method to ensure
     // that Spring publishes it before it initializes Spring Security’s method security @Configuration classes!
     @Bean
-    static MethodSecurityExpressionHandler methodSecurityExpressionHandler(RoleHierarchy roleHierarchy) {
+    static MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
-        handler.setRoleHierarchy(roleHierarchy);
+        handler.setRoleHierarchy(roleHierarchy());
+        handler.setPermissionEvaluator(permissionEvaluator());
         return handler;
     }
 
@@ -56,6 +75,12 @@ public class AclConfig {
                 return new AuthorizationDecision(true); // Invoked and works with @PreAuthorize("hasRole('ROLE_ADMIN')")!
             }
         };
+    }
+
+    @Bean
+    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+    Advisor preAuthorize() {
+        return AuthorizationManagerBeforeMethodInterceptor.preAuthorize(preAuthorizationManager());
     }
 
     @Bean
@@ -78,22 +103,18 @@ public class AclConfig {
 
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    Advisor preAuthorize() {
-        return AuthorizationManagerBeforeMethodInterceptor.preAuthorize(preAuthorizationManager());
-    }
-
-    @Bean
-    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     Advisor postAuthorize() {
         return AuthorizationManagerAfterMethodInterceptor.postAuthorize(postAuthorizationManager());
     }
-
 
     //AuthorizationManager API instead of metadata sources, config attributes, decision managers, and voters.
 //    @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
 //    @Autowired
 //    private DataSource dataSource;
-//
+// ********************************************************************************
+// ********************************************************************************
+// ********************************************************************************
+// CACHE
 //    @Bean
 //    public EhCacheBasedAclCache aclCache() {
 //        return new EhCacheBasedAclCache(
@@ -116,6 +137,10 @@ public class AclConfig {
 //        return new EhCacheManagerFactoryBean();
 //    }
 //
+// ********************************************************************************
+// ********************************************************************************
+// ********************************************************************************
+// ACL
 //    @Bean
 //    public PermissionGrantingStrategy permissionGrantingStrategy() {
 //        return new DefaultPermissionGrantingStrategy(new ConsoleAuditLogger());
@@ -145,19 +170,3 @@ public class AclConfig {
 //        return new JdbcMutableAclService(dataSource, lookupStrategy(), aclCache());
 //    }
 }
-
-
-//@Configuration
-//@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true)
-//public class AclMethodSecurityConfiguration extends GlobalMethodSecurityConfiguration {
-//
-//    @SuppressWarnings("SpringJavaAutowiredFieldsWarningInspection")
-//    @Autowired
-//    MethodSecurityExpressionHandler defaultMethodSecurityExpressionHandler;
-//
-//    @Override
-//    protected MethodSecurityExpressionHandler createExpressionHandler() {
-//        return defaultMethodSecurityExpressionHandler;
-//    }
-//
-//}
