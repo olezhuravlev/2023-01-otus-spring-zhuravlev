@@ -3,8 +3,10 @@ package ru.otus.spring.repository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Repository;
+import ru.otus.spring.config.DataSourcePopulator;
 import ru.otus.spring.model.Book;
 
 import java.util.List;
@@ -16,6 +18,9 @@ public class BookRepoJpa implements BookRepo {
 
     @PersistenceContext
     private final EntityManager entityManager;
+
+//    @Autowired
+//    private DataSourcePopulator populator;
 
     @Override
     public List<Book> findAllWithAuthorAndGenre() {
@@ -38,6 +43,10 @@ public class BookRepoJpa implements BookRepo {
 
     @Override
     public Book save(Book book) {
+
+//        Book book1 = entityManager.find(Book.class, 100);
+//        populator.populate(book1);
+
         if (book.getId() <= 0) {
             entityManager.persist(book);
             return book;

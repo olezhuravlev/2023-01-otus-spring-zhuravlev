@@ -6,28 +6,59 @@ DROP TABLE IF EXISTS acl_sid;
 CREATE TABLE IF NOT EXISTS acl_class
 (
     id    bigint UNIQUE NOT NULL,
+    --id bigint NOT NULL DEFAULT nextval('acl_class_id_seq'::regclass),
     class varchar(255)  NOT NULL,
+    class_id_type varchar(255),
     CONSTRAINT acl_class_pkey PRIMARY KEY (id)
 );
 
+--CREATE SEQUENCE IF NOT EXISTS public.acl_class_id_seq
+--    INCREMENT 1
+--    START 100
+--    MINVALUE 100
+--    MAXVALUE 9223372036854775807
+--    CACHE 1
+--    OWNED BY acl_class.id;
+--ALTER SEQUENCE public.acl_class_id_seq OWNER TO librarydb;
+
 CREATE TABLE IF NOT EXISTS acl_sid
 (
-    id        bigint UNIQUE NOT NULL,
+    id    bigint UNIQUE NOT NULL,
+    --id bigint NOT NULL DEFAULT nextval('acl_sid_id_seq'::regclass),
     sid       varchar(100)  NOT NULL,
-    principal smallint      NOT NULL,
+    principal BOOLEAN      NOT NULL,
     CONSTRAINT acl_sid_pkey PRIMARY KEY (id)
 );
 
+--CREATE SEQUENCE IF NOT EXISTS public.acl_sid_id_seq
+--    INCREMENT 1
+--    START 100
+--    MINVALUE 100
+--    MAXVALUE 9223372036854775807
+--    CACHE 1
+--    OWNED BY acl_sid.id;
+--ALTER SEQUENCE public.acl_sid_id_seq OWNER TO librarydb;
+
 CREATE TABLE IF NOT EXISTS acl_object_identity
 (
-    id                 bigint UNIQUE NOT NULL,
+    id    bigint UNIQUE NOT NULL,
+    --id bigint NOT NULL DEFAULT nextval('acl_object_identity_id_seq'::regclass),
     object_id_class    bigint        NOT NULL,
-    object_id_identity bigint        NOT NULL,
+    object_id_identity varchar(36)        NOT NULL,
     parent_object      bigint DEFAULT NULL,
     owner_sid          bigint DEFAULT NULL,
-    entries_inheriting smallint      NOT NULL,
+    entries_inheriting BOOLEAN      NOT NULL,
     CONSTRAINT acl_object_identity_pkey PRIMARY KEY (id)
 );
+
+--CREATE SEQUENCE IF NOT EXISTS public.acl_object_identity_id_seq
+--    INCREMENT 1
+--    START 100
+--    MINVALUE 100
+--    MAXVALUE 9223372036854775807
+--    CACHE 1
+--    OWNED BY acl_object_identity.id;
+--ALTER SEQUENCE public.acl_object_identity_id_seq OWNER TO librarydb;
 
 ALTER TABLE acl_object_identity
     ADD FOREIGN KEY (object_id_class) REFERENCES acl_class (id);
@@ -38,28 +69,28 @@ ALTER TABLE acl_object_identity
 
 CREATE TABLE IF NOT EXISTS acl_entry
 (
-    id                  bigint UNIQUE NOT NULL,
+    id    bigint UNIQUE NOT NULL,
+    --id bigint NOT NULL DEFAULT nextval('acl_entry_identity_id_seq'::regclass),
     acl_object_identity bigint        NOT NULL,
     ace_order           integer       NOT NULL,
     sid                 bigint        NOT NULL,
     mask                integer       NOT NULL,
-    granting            smallint      NOT NULL,
-    audit_success       smallint      NOT NULL,
-    audit_failure       smallint      NOT NULL,
+    granting            BOOLEAN      NOT NULL,
+    audit_success       BOOLEAN      NOT NULL,
+    audit_failure       BOOLEAN      NOT NULL,
     CONSTRAINT acl_entry_pkey PRIMARY KEY (id)
 );
+
+--CREATE SEQUENCE IF NOT EXISTS public.acl_entry_identity_id_seq
+--    INCREMENT 1
+--    START 100
+--    MINVALUE 100
+--    MAXVALUE 9223372036854775807
+--    CACHE 1
+--    OWNED BY acl_entry.id;
+--ALTER SEQUENCE public.acl_entry_identity_id_seq OWNER TO librarydb;
 
 ALTER TABLE acl_entry
     ADD FOREIGN KEY (acl_object_identity) REFERENCES acl_object_identity (id);
 ALTER TABLE acl_entry
     ADD FOREIGN KEY (sid) REFERENCES acl_sid (id);
-
--- Query to show imposed restrictions:
--- SELECT s.id, s.sid, s.principal,
---        e.id rule_id, e.ace_order, e.mask, e.granting, e.audit_success, e.audit_failure,
---        c.class, i.object_id_identity class_obj_id, i.parent_object, i.entries_inheriting
--- FROM acl_sid s
---          LEFT JOIN acl_entry e ON s.id=e.sid
---          LEFT JOIN acl_object_identity i ON s.id=i.owner_sid AND i.id=e.acl_object_identity
---          LEFT JOIN acl_class c ON i.object_id_class=c.id
--- ORDER BY s.id, e.id;
