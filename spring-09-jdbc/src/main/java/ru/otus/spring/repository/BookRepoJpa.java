@@ -43,10 +43,6 @@ public class BookRepoJpa implements BookRepo {
 
     @Override
     public Book save(Book book) {
-
-//        Book book1 = entityManager.find(Book.class, 100);
-//        populator.populate(book1);
-
         if (book.getId() <= 0) {
             entityManager.persist(book);
             return book;

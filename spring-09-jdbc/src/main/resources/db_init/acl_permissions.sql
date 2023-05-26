@@ -9,13 +9,6 @@ VALUES (1, TRUE, 'admin'),
        (3, TRUE, 'reader');
 
 -- Acl: Book ID=1 has 2 restrictions (specified in table `acl_entry`).
--- ObjectIdentity
--- AclService
--- LookupStrategy
--- MutableAclService
--- AclEntryVoter
--- AclEntryAfterInvocationProvider
--- AclEntryAfterInvocationCollectionFilteringProvider
 INSERT INTO acl_object_identity (id, object_id_class, object_id_identity, parent_object, owner_sid, entries_inheriting)
 VALUES (1, 1, 1, NULL, 1, FALSE),
        (2, 1, 2, NULL, 1, FALSE),
@@ -28,8 +21,7 @@ VALUES (1, 1, 1, NULL, 1, FALSE),
        (9, 1, 9, NULL, 1, FALSE),
        (10, 1, 10, NULL, 1, FALSE);
 
--- AccessControlEntry (ACE): Neither 'commenter' nor 'reader' cannot read book ID=1.
--- Permission
+-- AccessControlEntry (ACE): Only "Admin" user can see book ID#1.
 INSERT INTO acl_entry (id, acl_object_identity, ace_order, sid, mask, granting, audit_success, audit_failure)
 VALUES (1, 1, 1, 1, 1, TRUE, TRUE, TRUE),
        (2, 5, 1, 1, 1, TRUE, TRUE, TRUE);
