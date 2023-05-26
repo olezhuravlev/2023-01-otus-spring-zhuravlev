@@ -16,11 +16,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.acls.AclPermissionCacheOptimizer;
 import org.springframework.security.acls.AclPermissionEvaluator;
-import org.springframework.security.acls.domain.AclAuthorizationStrategy;
-import org.springframework.security.acls.domain.AclAuthorizationStrategyImpl;
-import org.springframework.security.acls.domain.ConsoleAuditLogger;
-import org.springframework.security.acls.domain.DefaultPermissionGrantingStrategy;
-import org.springframework.security.acls.domain.SpringCacheBasedAclCache;
+import org.springframework.security.acls.domain.*;
 import org.springframework.security.acls.jdbc.BasicLookupStrategy;
 import org.springframework.security.acls.jdbc.JdbcMutableAclService;
 import org.springframework.security.acls.jdbc.LookupStrategy;
@@ -41,6 +37,9 @@ import java.util.function.Supplier;
 @Configuration
 @EnableMethodSecurity(securedEnabled = true)
 public class AclConfig {
+
+    // Whether to use field "class_id_type varchar(255) NOT NULL" in table "acl_schema".
+    private static final boolean ACL_CLASS_ID_SUPPORTED = false;
 
     @Autowired
     private DataSource dataSource;
@@ -175,7 +174,9 @@ public class AclConfig {
     @Bean
     public LookupStrategy lookupStrategy() {
         BasicLookupStrategy lookupStrategy = new BasicLookupStrategy(dataSource, aclCache(), aclAuthorizationStrategy(), new ConsoleAuditLogger());
-        lookupStrategy.setAclClassIdSupported(true);
+        // Adds field "CLASS_ID_TYPE" to:
+        // SELECT query from "ACL_OBJECT_IDENTITY -> ACL_SID -> ACL_CLASS -> ACL_ENTRY".
+        lookupStrategy.setAclClassIdSupported(ACL_CLASS_ID_SUPPORTED);
         return lookupStrategy;
     }
 
@@ -183,7 +184,10 @@ public class AclConfig {
     @Bean
     public JdbcMutableAclService aclService() {
         JdbcMutableAclService aclService = new JdbcMutableAclService(dataSource, lookupStrategy(), aclCache());
-        aclService.setAclClassIdSupported(true);
+        // Adds field "CLASS_ID_TYPE" to the queries:
+        // SELECT query from "ACL_OBJECT_IDENTITY, ACL_CLASS",
+        // INSERT query into "ACL_CLASS".
+        aclService.setAclClassIdSupported(ACL_CLASS_ID_SUPPORTED);
         return aclService;
     }
 }

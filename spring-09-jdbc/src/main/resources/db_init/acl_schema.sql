@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS acl_class
 (
     id            bigserial    NOT NULL PRIMARY KEY,
     class         varchar(255) NOT NULL,
-    class_id_type varchar(255) NOT NULL,
     CONSTRAINT unique_uk_2 UNIQUE (class)
 );
 

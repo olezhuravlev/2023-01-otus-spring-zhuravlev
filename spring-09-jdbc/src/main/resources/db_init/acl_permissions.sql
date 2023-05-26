@@ -1,5 +1,6 @@
-INSERT INTO acl_class (id, class, class_id_type)
-VALUES (1, 'ru.otus.spring.model.Book', 'bigserial');
+-- Object classes
+INSERT INTO acl_class (id, class)
+VALUES (1, 'ru.otus.spring.model.Book');
 
 -- Sid
 INSERT INTO acl_sid (id, principal, sid)
@@ -16,23 +17,24 @@ VALUES (1, TRUE, 'admin'),
 -- AclEntryAfterInvocationProvider
 -- AclEntryAfterInvocationCollectionFilteringProvider
 INSERT INTO acl_object_identity (id, object_id_class, object_id_identity, parent_object, owner_sid, entries_inheriting)
-VALUES (1, 1, 1, NULL, 1, FALSE);
+VALUES (1, 1, 1, NULL, 1, FALSE),
+       (2, 1, 2, NULL, 1, FALSE),
+       (3, 1, 3, NULL, 1, FALSE),
+       (4, 1, 4, NULL, 1, FALSE),
+       (5, 1, 5, NULL, 1, FALSE),
+       (6, 1, 6, NULL, 1, FALSE),
+       (7, 1, 7, NULL, 1, FALSE),
+       (8, 1, 8, NULL, 1, FALSE),
+       (9, 1, 9, NULL, 1, FALSE),
+       (10, 1, 10, NULL, 1, FALSE);
 
 -- AccessControlEntry (ACE): Neither 'commenter' nor 'reader' cannot read book ID=1.
 -- Permission
 INSERT INTO acl_entry (id, acl_object_identity, ace_order, sid, mask, granting, audit_success, audit_failure)
-VALUES (1, 1, 1, 1, 31, TRUE, TRUE, TRUE);
+VALUES (1, 1, 1, 1, 1, TRUE, TRUE, TRUE),
+       (2, 5, 1, 1, 1, TRUE, TRUE, TRUE);
 
----- Query to show imposed restrictions:
---SELECT s.id, s.sid, s.principal,
---        e.id rule_id, e.ace_order, e.mask, e.granting, e.audit_success, e.audit_failure,
---		c.class, i.object_id_identity class_obj_id, i.parent_object, i.entries_inheriting
---FROM acl_sid s
---          LEFT JOIN acl_entry e ON s.id=e.sid
---		  LEFT JOIN acl_object_identity i ON e.id=i.id
---		  LEFT JOIN acl_class c ON i.object_id_class=c.id
---ORDER BY s.id, e.id, e.ace_order;
-
+---- Query from BasicLookupStrategy:
 -- SELECT ACL_OBJECT_IDENTITY.OBJECT_ID_IDENTITY,
 --        ACL_ENTRY.ACE_ORDER,
 --        ACL_OBJECT_IDENTITY.ID AS ACL_ID,
@@ -47,11 +49,12 @@ VALUES (1, 1, 1, 1, 31, TRUE, TRUE, TRUE);
 --        ACL_SID.SID AS ACE_SID,
 --        ACLI_SID.PRINCIPAL AS ACL_PRINCIPAL,
 --        ACLI_SID.SID AS ACL_SID,
---        ACL_CLASS.CLASS, ACL_CLASS.CLASS_ID_TYPE
+--        ACL_CLASS.CLASS --,
+--        --ACL_CLASS.CLASS_ID_TYPE
 -- FROM ACL_OBJECT_IDENTITY
 --          LEFT JOIN ACL_SID ACLI_SID ON ACLI_SID.ID = ACL_OBJECT_IDENTITY.OWNER_SID
 --          LEFT JOIN ACL_CLASS ON ACL_CLASS.ID = ACL_OBJECT_IDENTITY.OBJECT_ID_CLASS
 --          LEFT JOIN ACL_ENTRY ON ACL_OBJECT_IDENTITY.ID = ACL_ENTRY.ACL_OBJECT_IDENTITY
 --          LEFT JOIN ACL_SID ON ACL_ENTRY.SID = ACL_SID.ID
--- WHERE ((ACL_OBJECT_IDENTITY.OBJECT_ID_IDENTITY = '1' AND ACL_CLASS.CLASS = 'ru.otus.spring.model.Book'))
--- ORDER BY ACL_OBJECT_IDENTITY.OBJECT_ID_IDENTITY ASC, ACL_ENTRY.ACE_ORDER ASC
+-- --WHERE ((ACL_OBJECT_IDENTITY.OBJECT_ID_IDENTITY = '1' AND ACL_CLASS.CLASS = 'ru.otus.spring.model.Book'))
+-- ORDER BY ACL_OBJECT_IDENTITY.OBJECT_ID_IDENTITY ASC, ACL_ENTRY.ACE_ORDER ASC;
