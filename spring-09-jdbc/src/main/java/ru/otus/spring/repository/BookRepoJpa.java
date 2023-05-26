@@ -6,17 +6,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.security.acls.domain.BasePermission;
-import org.springframework.security.acls.domain.GrantedAuthoritySid;
-import org.springframework.security.acls.domain.ObjectIdentityImpl;
-import org.springframework.security.acls.domain.PrincipalSid;
-import org.springframework.security.acls.model.MutableAcl;
-import org.springframework.security.acls.model.MutableAclService;
-import org.springframework.security.acls.model.ObjectIdentity;
-import org.springframework.security.acls.model.Sid;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 import ru.otus.spring.model.Book;
+import ru.otus.spring.service.AclPermissionService;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +23,7 @@ public class BookRepoJpa implements BookRepo {
     private final EntityManager entityManager;
 
     @Autowired
-    protected MutableAclService mutableAclService;
+    private AclPermissionService aclPermissionService;
 
     @Override
     public List<Book> findAllWithAuthorAndGenre() {
@@ -69,21 +63,13 @@ public class BookRepoJpa implements BookRepo {
         }
     }
 
-    @Override
-    public void populate(Book book) {
 
+    private void populate(Book book) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        final Sid owner = new PrincipalSid(authentication);
-
-        ObjectIdentity oid = new ObjectIdentityImpl(book.getClass(), book.getId());
-        final Sid admin = new GrantedAuthoritySid("ROLE_ADMIN");
-
-        MutableAcl acl = mutableAclService.createAcl(oid);
-        acl.setOwner(owner);
-        acl.insertAce(acl.getEntries().size(), BasePermission.ADMINISTRATION, admin, true);
-
-        mutableAclService.updateAcl(acl);
-
-        System.out.println("Done!");
+        aclPermissionService.addPermissionForUser(book, BasePermission.WRITE, authentication.getName());
+        aclPermissionService.addPermissionForUser(book, BasePermission.READ, authentication.getName());
+        aclPermissionService.addPermissionForUser(book, BasePermission.CREATE, authentication.getName());
+        aclPermissionService.addPermissionForUser(book, BasePermission.DELETE, authentication.getName());
+        aclPermissionService.addPermissionForUser(book, BasePermission.ADMINISTRATION, authentication.getName());
     }
 }
