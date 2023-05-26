@@ -24,7 +24,7 @@ import javax.sql.DataSource;
 @EnableMethodSecurity(securedEnabled = true)
 public class AclConfig {
 
-    // Whether to use field "class_id_type varchar(255) NOT NULL" in table "acl_schema".
+    // IMPORTANT: Setting to use field "class_id_type varchar(255) NOT NULL" in table "acl_schema"!
     private static final boolean ACL_CLASS_ID_SUPPORTED = false;
 
     private final DataSource dataSource;

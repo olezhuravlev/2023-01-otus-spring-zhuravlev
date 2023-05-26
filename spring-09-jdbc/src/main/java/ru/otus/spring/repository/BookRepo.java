@@ -20,4 +20,6 @@ public interface BookRepo {
     boolean isBookExist(long id);
     Book save(Book book);
     void deleteById(long id);
+
+    void populate(Book book);
 }

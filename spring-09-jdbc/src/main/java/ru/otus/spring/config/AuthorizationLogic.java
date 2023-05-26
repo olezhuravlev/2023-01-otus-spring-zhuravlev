@@ -12,6 +12,6 @@ public class AuthorizationLogic {
     // @PostFilter: Invoked for each returning item.
     // @PreFilter: Not invoked - Filter target must be a collection, array, map or stream type!
     public boolean decide(SecurityExpressionRoot expressionRoot, Long id, String classCanonicalName, Authentication authentication) {
-        return id.equals(1L);
+        return true;
     }
 }
