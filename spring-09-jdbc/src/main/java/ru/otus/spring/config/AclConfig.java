@@ -16,6 +16,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.acls.AclPermissionCacheOptimizer;
 import org.springframework.security.acls.AclPermissionEvaluator;
+import org.springframework.security.acls.domain.AclAuthorizationStrategy;
 import org.springframework.security.acls.domain.AclAuthorizationStrategyImpl;
 import org.springframework.security.acls.domain.ConsoleAuditLogger;
 import org.springframework.security.acls.domain.DefaultPermissionGrantingStrategy;
@@ -23,6 +24,7 @@ import org.springframework.security.acls.domain.SpringCacheBasedAclCache;
 import org.springframework.security.acls.jdbc.BasicLookupStrategy;
 import org.springframework.security.acls.jdbc.JdbcMutableAclService;
 import org.springframework.security.acls.jdbc.LookupStrategy;
+import org.springframework.security.acls.model.PermissionGrantingStrategy;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.authorization.method.AuthorizationManagerAfterMethodInterceptor;
@@ -75,7 +77,7 @@ public class AclConfig {
 
             @Override
             public boolean hasPermission(Authentication authentication, Object domainObject, Object permission) {
-                return true;
+                return false;
             }
 
             @Override
@@ -91,7 +93,8 @@ public class AclConfig {
     public MethodSecurityExpressionHandler expressionHandler() {
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
         handler.setRoleHierarchy(roleHierarchy());
-        handler.setPermissionEvaluator(permissionEvaluator());
+        //handler.setPermissionEvaluator(permissionEvaluator());
+        handler.setPermissionEvaluator(new AclPermissionEvaluator(aclService()));
         handler.setPermissionCacheOptimizer(new AclPermissionCacheOptimizer(aclService()));
         return handler;
     }
@@ -154,12 +157,12 @@ public class AclConfig {
     }
 
     @Bean
-    public org.springframework.security.acls.model.PermissionGrantingStrategy permissionGrantingStrategy() {
+    public PermissionGrantingStrategy permissionGrantingStrategy() {
         return new DefaultPermissionGrantingStrategy(new ConsoleAuditLogger());
     }
 
     @Bean
-    public org.springframework.security.acls.domain.AclAuthorizationStrategy aclAuthorizationStrategy() {
+    public AclAuthorizationStrategy aclAuthorizationStrategy() {
         return new AclAuthorizationStrategyImpl(new SimpleGrantedAuthority("ROLE_ADMIN"));
     }
 
@@ -171,12 +174,16 @@ public class AclConfig {
     // Provides high-performance ACL retrieval capabilities
     @Bean
     public LookupStrategy lookupStrategy() {
-        return new BasicLookupStrategy(dataSource, aclCache(), aclAuthorizationStrategy(), new ConsoleAuditLogger());
+        BasicLookupStrategy lookupStrategy = new BasicLookupStrategy(dataSource, aclCache(), aclAuthorizationStrategy(), new ConsoleAuditLogger());
+        lookupStrategy.setAclClassIdSupported(true);
+        return lookupStrategy;
     }
 
     // Provides mutator capabilities.
     @Bean
     public JdbcMutableAclService aclService() {
-        return new JdbcMutableAclService(dataSource, lookupStrategy(), aclCache());
+        JdbcMutableAclService aclService = new JdbcMutableAclService(dataSource, lookupStrategy(), aclCache());
+        aclService.setAclClassIdSupported(true);
+        return aclService;
     }
 }
