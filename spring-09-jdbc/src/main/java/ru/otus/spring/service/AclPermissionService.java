@@ -1,10 +1,12 @@
 package ru.otus.spring.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.acls.domain.GrantedAuthoritySid;
 import org.springframework.security.acls.domain.ObjectIdentityImpl;
 import org.springframework.security.acls.domain.PrincipalSid;
 import org.springframework.security.acls.model.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -17,40 +19,46 @@ import ru.otus.spring.model.Book;
 @Transactional
 public class AclPermissionService {
 
-    @Autowired
-    private MutableAclService aclService;
+    private final MutableAclService aclService;
+    private final PlatformTransactionManager transactionManager;
 
-    @Autowired
-    private PlatformTransactionManager transactionManager;
+    public AclPermissionService(MutableAclService aclService, PlatformTransactionManager transactionManager) {
+        this.aclService = aclService;
+        this.transactionManager = transactionManager;
+    }
 
-    public void addPermissionForUser(Book book, Permission permission, String username) {
-        final Sid sid = new PrincipalSid(username);
+    public void addPermissionForUser(Book book, Permission permission, Authentication authentication) {
+        Sid sid = new PrincipalSid(authentication.getName());
         addPermissionForSid(book, permission, sid);
     }
 
-    public void addPermissionForAuthority(Book book, Permission permission, String authority) {
-        final Sid sid = new GrantedAuthoritySid(authority);
+    public void addPermissionForAuthority(Book book, Permission permission, GrantedAuthority grantedAuthority) {
+        Sid sid = new GrantedAuthoritySid(grantedAuthority);
         addPermissionForSid(book, permission, sid);
     }
 
     private void addPermissionForSid(Book book, Permission permission, Sid sid) {
 
-        final TransactionTemplate transactionTemplate = new TransactionTemplate(transactionManager);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+        new TransactionTemplate(transactionManager).execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
 
-                final ObjectIdentity oi = new ObjectIdentityImpl(book.getClass(), book.getId());
+                ObjectIdentity objectIdentity = new ObjectIdentityImpl(book.getClass(), book.getId());
 
                 MutableAcl acl;
                 try {
-                    acl = (MutableAcl) aclService.readAclById(oi);
-                } catch (final NotFoundException nfe) {
-                    acl = aclService.createAcl(oi);
+                    acl = (MutableAcl) aclService.readAclById(objectIdentity);
+                } catch (final NotFoundException e) {
+                    acl = aclService.createAcl(objectIdentity);
+                    Sid owner = new PrincipalSid(authentication);
+                    acl.setOwner(owner);
                 }
 
+                // Add permission at the last position.
                 acl.insertAce(acl.getEntries().size(), permission, sid, true);
+
                 aclService.updateAcl(acl);
             }
         });

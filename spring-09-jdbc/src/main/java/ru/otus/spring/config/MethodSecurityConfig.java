@@ -1,13 +1,9 @@
 package ru.otus.spring.config;
 
-import org.aopalliance.intercept.MethodInvocation;
-import org.springframework.aop.Advisor;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Role;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
@@ -19,97 +15,51 @@ import org.springframework.security.acls.jdbc.BasicLookupStrategy;
 import org.springframework.security.acls.jdbc.JdbcMutableAclService;
 import org.springframework.security.acls.jdbc.LookupStrategy;
 import org.springframework.security.acls.model.PermissionGrantingStrategy;
-import org.springframework.security.authorization.AuthorizationDecision;
-import org.springframework.security.authorization.AuthorizationManager;
-import org.springframework.security.authorization.method.AuthorizationManagerAfterMethodInterceptor;
-import org.springframework.security.authorization.method.AuthorizationManagerBeforeMethodInterceptor;
-import org.springframework.security.authorization.method.MethodInvocationResult;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import javax.sql.DataSource;
-import java.util.function.Supplier;
 
 @Configuration
 @EnableMethodSecurity(securedEnabled = true)
-public class AclConfig {
+public class MethodSecurityConfig {
 
-    // IMPORTANT: Setting to use field "class_id_type varchar(255) NOT NULL" in table "acl_schema"!
+    // Setting of using field "class_id_type varchar(255) NOT NULL" in table "acl_schema"
+    // must be set equally for LookupStrategy and JdbcMutableAclService!
     private static final boolean ACL_CLASS_ID_SUPPORTED = false;
 
     private final DataSource dataSource;
 
-    public AclConfig(DataSource dataSource) {
+    public MethodSecurityConfig(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Bean
-    static RoleHierarchy roleHierarchy() {
+    public PermissionFactory permissionFactory() {
+        return new DefaultPermissionFactory();
+    }
 
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+
+        // RoleHierarchy comes into action while using hasAnyAuthority or hasAnyRole.
         RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
 
-        // Having role 'Admin' leads to having all READ-permissions.
-        roleHierarchy.setHierarchy("ROLE_ADMIN > permission:read");
+        // Having role 'Admin' leads to having COMMENTER- and READ-roles.
+        roleHierarchy.setHierarchy("ROLE_ADMIN > ROLE_COMMENTER\n ROLE_COMMENTER > ROLE_READER");
+
         return roleHierarchy;
     }
 
-    // We expose MethodSecurityExpressionHandler using a static method to ensure
-    // that Spring publishes it before it initializes Spring Security’s method security @Configuration classes!
     @Bean
     public MethodSecurityExpressionHandler expressionHandler() {
+
         DefaultMethodSecurityExpressionHandler handler = new DefaultMethodSecurityExpressionHandler();
         handler.setRoleHierarchy(roleHierarchy());
         handler.setPermissionEvaluator(new AclPermissionEvaluator(aclService()));
         handler.setPermissionCacheOptimizer(new AclPermissionCacheOptimizer(aclService()));
+
         return handler;
-    }
-
-    @Bean
-    public AuthorizationManager<MethodInvocation> preAuthorizationManager() {
-
-        return new AuthorizationManager<>() {
-            @Override
-            public void verify(Supplier<Authentication> authentication, MethodInvocation object) {
-                AuthorizationManager.super.verify(authentication, object);
-            }
-
-            @Override
-            public AuthorizationDecision check(Supplier<Authentication> authentication, MethodInvocation object) {
-                // Invoked AFTER AuthorizationLogic!
-                return new AuthorizationDecision(true); // Invoked and works with @PreAuthorize("hasRole('ROLE_ADMIN')")!
-            }
-        };
-    }
-
-    @Bean
-    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    Advisor preAuthorize() {
-        return AuthorizationManagerBeforeMethodInterceptor.preAuthorize(preAuthorizationManager());
-    }
-
-    @Bean
-    public AuthorizationManager<MethodInvocationResult> postAuthorizationManager() {
-
-        return new AuthorizationManager<>() {
-
-            @Override
-            public void verify(Supplier<Authentication> authentication, MethodInvocationResult object) {
-                AuthorizationManager.super.verify(authentication, object);
-            }
-
-            @Override
-            public AuthorizationDecision check(Supplier<Authentication> authentication, MethodInvocationResult object) {
-                // Invoked BEFORE AuthorizationLogic!
-                return new AuthorizationDecision(true); // Invoked and works with @PostAuthorize("hasRole('ROLE_ADMIN')")!
-            }
-        };
-    }
-
-    @Bean
-    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-    Advisor postAuthorize() {
-        return AuthorizationManagerAfterMethodInterceptor.postAuthorize(postAuthorizationManager());
     }
 
     @Bean

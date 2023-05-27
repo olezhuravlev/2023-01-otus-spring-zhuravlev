@@ -3,15 +3,14 @@ package ru.otus.spring.repository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.security.acls.domain.BasePermission;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 import ru.otus.spring.model.Book;
 import ru.otus.spring.service.AclPermissionService;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +21,6 @@ public class BookRepoJpa implements BookRepo {
     @PersistenceContext
     private final EntityManager entityManager;
 
-    @Autowired
     private AclPermissionService aclPermissionService;
 
     @Override
@@ -48,7 +46,8 @@ public class BookRepoJpa implements BookRepo {
     public Book save(Book book) {
         if (book.getId() <= 0) {
             entityManager.persist(book);
-            populate(book);
+            // Only Admin allowed to create books, and granted with all permissions by default.
+            assignAdminPermissions(book);
             return book;
         } else {
             return entityManager.merge(book);
@@ -63,13 +62,13 @@ public class BookRepoJpa implements BookRepo {
         }
     }
 
-
-    private void populate(Book book) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        aclPermissionService.addPermissionForUser(book, BasePermission.WRITE, authentication.getName());
-        aclPermissionService.addPermissionForUser(book, BasePermission.READ, authentication.getName());
-        aclPermissionService.addPermissionForUser(book, BasePermission.CREATE, authentication.getName());
-        aclPermissionService.addPermissionForUser(book, BasePermission.DELETE, authentication.getName());
-        aclPermissionService.addPermissionForUser(book, BasePermission.ADMINISTRATION, authentication.getName());
+    private void assignAdminPermissions(Book book) {
+        Arrays.asList(
+                        BasePermission.WRITE,
+                        BasePermission.READ,
+                        BasePermission.CREATE,
+                        BasePermission.DELETE,
+                        BasePermission.ADMINISTRATION)
+                .forEach(permission -> aclPermissionService.addPermissionForUser(book, permission, SecurityContextHolder.getContext().getAuthentication()));
     }
 }

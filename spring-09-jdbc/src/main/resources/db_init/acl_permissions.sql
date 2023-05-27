@@ -10,21 +10,23 @@ VALUES (1, TRUE, 'admin'),
 
 -- Acl: Book ID=1 has 2 restrictions (specified in table `acl_entry`).
 INSERT INTO acl_object_identity (id, object_id_class, object_id_identity, parent_object, owner_sid, entries_inheriting)
-VALUES (101, 1, 1, NULL, 1, FALSE),
-       (102, 1, 2, NULL, 1, FALSE),
-       (103, 1, 3, NULL, 1, FALSE),
-       (104, 1, 4, NULL, 1, FALSE),
-       (105, 1, 5, NULL, 1, FALSE),
-       (106, 1, 6, NULL, 1, FALSE),
-       (107, 1, 7, NULL, 1, FALSE),
-       (108, 1, 8, NULL, 1, FALSE),
-       (109, 1, 9, NULL, 1, FALSE),
-       (110, 1, 10, NULL, 1, FALSE);
+VALUES (1, 1, 1, NULL, 1, TRUE),
+       (2, 1, 2, NULL, 1, TRUE),
+       (3, 1, 3, NULL, 1, TRUE),
+       (4, 1, 4, NULL, 1, TRUE),
+       (5, 1, 5, NULL, 1, TRUE),
+       (6, 1, 6, NULL, 1, TRUE),
+       (7, 1, 7, NULL, 1, TRUE),
+       (8, 1, 8, NULL, 1, TRUE),
+       (9, 1, 9, NULL, 1, TRUE),
+       (10, 1, 10, NULL, 1, TRUE);
 
 -- AccessControlEntry (ACE): Only "Admin" user can see book ID#1.
 INSERT INTO acl_entry (id, acl_object_identity, ace_order, sid, mask, granting, audit_success, audit_failure)
-VALUES (101, 101, 1, 1, 1, TRUE, TRUE, TRUE),
-       (105, 105, 1, 1, 1, TRUE, TRUE, TRUE);
+VALUES (1, 1, 0, 1, 1, TRUE, TRUE, TRUE),
+       (2, 5, 0, 1, 1, TRUE, TRUE, TRUE),
+       (3, 1, 0, 3, 1, TRUE, TRUE, TRUE),
+       (4, 5, 0, 3, 1, TRUE, TRUE, TRUE);
 
 ---- Query from BasicLookupStrategy:
 -- SELECT ACL_OBJECT_IDENTITY.OBJECT_ID_IDENTITY,
