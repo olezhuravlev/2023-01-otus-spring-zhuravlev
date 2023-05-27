@@ -3,19 +3,19 @@ DROP TABLE IF EXISTS acl_object_identity;
 DROP TABLE IF EXISTS acl_class;
 DROP TABLE IF EXISTS acl_sid;
 
-CREATE TABLE IF NOT EXISTS acl_class
-(
-    id            bigserial    NOT NULL PRIMARY KEY,
-    class         varchar(255) NOT NULL,
-    CONSTRAINT unique_uk_2 UNIQUE (class)
-);
-
 CREATE TABLE IF NOT EXISTS acl_sid
 (
     id        bigserial    NOT NULL PRIMARY KEY,
     sid       varchar(100) NOT NULL,
     principal BOOLEAN      NOT NULL,
     CONSTRAINT unique_uk_1 UNIQUE (sid, principal)
+);
+
+CREATE TABLE IF NOT EXISTS acl_class
+(
+    id    bigserial    NOT NULL PRIMARY KEY,
+    class varchar(255) NOT NULL,
+    CONSTRAINT unique_uk_2 UNIQUE (class)
 );
 
 CREATE TABLE IF NOT EXISTS acl_object_identity

@@ -1,14 +1,14 @@
--- Object classes
-INSERT INTO acl_class (id, class)
-VALUES (1, 'ru.otus.spring.model.Book');
-
--- Sid
+-- Principals and their SIDs.
 INSERT INTO acl_sid (id, principal, sid)
 VALUES (1, TRUE, 'admin'),
        (2, TRUE, 'commenter'),
        (3, TRUE, 'reader');
 
--- Acl: Book ID=1 has 2 restrictions (specified in table `acl_entry`).
+-- Object classes, covered with ACL protection.
+INSERT INTO acl_class (id, class)
+VALUES (1, 'ru.otus.spring.model.Book');
+
+-- Objects, covered with ACL protection.
 INSERT INTO acl_object_identity (id, object_id_class, object_id_identity, parent_object, owner_sid, entries_inheriting)
 VALUES (1, 1, 1, NULL, 1, TRUE),
        (2, 1, 2, NULL, 1, TRUE),
@@ -21,12 +21,23 @@ VALUES (1, 1, 1, NULL, 1, TRUE),
        (9, 1, 9, NULL, 1, TRUE),
        (10, 1, 10, NULL, 1, TRUE);
 
--- AccessControlEntry (ACE): Only "Admin" user can see book ID#1.
+-- ACL restrictions (ACE): Only user "Admin" can read book ID#1.
 INSERT INTO acl_entry (id, acl_object_identity, ace_order, sid, mask, granting, audit_success, audit_failure)
 VALUES (1, 1, 0, 1, 1, TRUE, TRUE, TRUE),
-       (2, 5, 0, 1, 1, TRUE, TRUE, TRUE),
-       (3, 1, 0, 3, 1, TRUE, TRUE, TRUE),
-       (4, 5, 0, 3, 1, TRUE, TRUE, TRUE);
+       (2, 1, 0, 2, 0, TRUE, TRUE, TRUE),
+       (3, 1, 0, 3, 0, TRUE, TRUE, TRUE),
+       (4, 2, 0, 1, 1, TRUE, TRUE, TRUE),
+       (5, 2, 0, 2, 1, TRUE, TRUE, TRUE),
+       (6, 2, 0, 3, 1, TRUE, TRUE, TRUE),
+       (7, 3, 0, 1, 1, TRUE, TRUE, TRUE),
+       (8, 3, 0, 2, 1, TRUE, TRUE, TRUE),
+       (9, 3, 0, 3, 1, TRUE, TRUE, TRUE),
+       (10, 4, 0, 1, 1, TRUE, TRUE, TRUE),
+       (11, 4, 0, 2, 1, TRUE, TRUE, TRUE),
+       (12, 4, 0, 3, 1, TRUE, TRUE, TRUE),
+       (13, 5, 0, 1, 1, TRUE, TRUE, TRUE),
+       (14, 5, 0, 2, 1, TRUE, TRUE, TRUE),
+       (15, 5, 0, 3, 1, TRUE, TRUE, TRUE);
 
 ---- Query from BasicLookupStrategy:
 -- SELECT ACL_OBJECT_IDENTITY.OBJECT_ID_IDENTITY,

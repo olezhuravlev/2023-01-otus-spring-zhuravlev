@@ -1,5 +1,5 @@
 INSERT INTO books(id, title, author_id, genre_id)
-VALUES (1, 'Мои пароли', 64, 3),
+VALUES (1, 'Мои пароли', 201, 7),
        (2, 'A Beautiful Mind', 173, 5),
        (3, 'A Canticle for Leibowitz', 191, 3),
        (4, 'A Clockwork Orange', 9, 3),
