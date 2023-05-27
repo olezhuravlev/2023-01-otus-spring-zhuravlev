@@ -44,14 +44,19 @@ public class BookRepoJpa implements BookRepo {
 
     @Override
     public Book save(Book book) {
+
+        Book result;
         if (book.getId() <= 0) {
             entityManager.persist(book);
-            // Only Admin allowed to create books, and granted with all permissions by default.
-            assignAdminPermissions(book);
-            return book;
+            result = book;
         } else {
-            return entityManager.merge(book);
+            result = entityManager.merge(book);
         }
+
+        // Only Admin allowed to create books, and granted with all permissions by default.
+        assignAdminPermissions(result);
+
+        return result;
     }
 
     @Override

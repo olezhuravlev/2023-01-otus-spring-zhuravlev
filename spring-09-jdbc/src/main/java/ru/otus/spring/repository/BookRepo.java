@@ -13,7 +13,7 @@ public interface BookRepo {
     @PostFilter("hasPermission(filterObject, 'READ')")
     List<Book> findAllWithAuthorAndGenre();
 
-    @PreAuthorize("@authorizationLogic.hasPermission(#id, 'ru.otus.spring.model.Book', authentication, 'READ')")
+    @PreAuthorize("@authorizationLogic.hasPermission(#id, 'ru.otus.spring.model.Book', 'READ')")
     Optional<Book> findById(@Param("id") long id);
 
     boolean isBookExist(long id);

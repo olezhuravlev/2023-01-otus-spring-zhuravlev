@@ -6,6 +6,7 @@ import org.springframework.security.acls.domain.PermissionFactory;
 import org.springframework.security.acls.domain.PrincipalSid;
 import org.springframework.security.acls.model.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -18,16 +19,16 @@ public class AuthorizationLogic {
     private AclService aclService;
     private PermissionFactory permissionFactory;
 
-    public boolean hasPermission(Long id, String classCanonicalName, Authentication authentication, String... permission) {
+    public boolean hasPermission(Long id, String classCanonicalName, String... permission) {
 
-        List<Permission> permissions = Arrays.stream(permission).map(permissionFactory::buildFromName).toList();
-
-        ObjectIdentity objectIdentity = new ObjectIdentityImpl(classCanonicalName, id);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         List<Sid> sids = List.of(new PrincipalSid(authentication));
+        ObjectIdentity objectIdentity = new ObjectIdentityImpl(classCanonicalName, id);
 
         try {
             Acl acl = aclService.readAclById(objectIdentity, sids);
-            return acl.isGranted(permissions, sids, false);
+            List<Permission> requiredMethodPermissions = Arrays.stream(permission).map(permissionFactory::buildFromName).toList();
+            return acl.isGranted(requiredMethodPermissions, sids, false);
         } catch (final NotFoundException e) {
             return false;
         }

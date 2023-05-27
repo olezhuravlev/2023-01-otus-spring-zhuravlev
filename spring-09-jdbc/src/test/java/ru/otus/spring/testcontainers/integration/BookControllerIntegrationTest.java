@@ -9,6 +9,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.otus.spring.testcontainers.AbstractBaseContainer;
+import ru.otus.spring.testcontainers.WithMockAdmin;
+import ru.otus.spring.testcontainers.WithMockAnonymous;
+import ru.otus.spring.testcontainers.WithMockNonAdmin;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -23,11 +26,22 @@ class BookControllerIntegrationTest extends AbstractBaseContainer {
 
     @DisplayName("Request Book page")
     @Test
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void requestBookPage() throws Exception {
 
         long bookId = 1;
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("<html")))
+                .andExpect(content().string(containsString("/html>")));
 
+        bookId = 2;
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("<html")))
+                .andExpect(content().string(containsString("/html>")));
+
+        bookId = 3;
         this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("<html")))
@@ -39,30 +53,42 @@ class BookControllerIntegrationTest extends AbstractBaseContainer {
     void requestBookPage_NotAuthenticated() throws Exception {
 
         long bookId = 1;
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId)).andExpect(status().is3xxRedirection());
 
-        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId))
-                .andExpect(status().is3xxRedirection());
+        bookId = 2;
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId)).andExpect(status().is3xxRedirection());
+
+        bookId = 3;
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId)).andExpect(status().is3xxRedirection());
     }
 
     @DisplayName("Request Book page by Anonymous user")
     @Test
-    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    @WithMockAnonymous
     void requestBookPage_Anonymous() throws Exception {
 
         long bookId = 1;
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId)).andExpect(status().is4xxClientError());
 
-        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId))
-                .andExpect(status().isOk());
+        bookId = 2;
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId)).andExpect(status().is4xxClientError());
+
+        bookId = 3;
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId)).andExpect(status().is4xxClientError());
     }
 
     @DisplayName("Request Book page by non-Admin user")
     @Test
-    @WithMockUser(authorities = {"ROLE_COMMENTER", "ROLE_READER"})
+    @WithMockNonAdmin
     void requestBookPage_nonAdmin() throws Exception {
 
         long bookId = 1;
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId)).andExpect(status().is4xxClientError());
 
-        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId))
-                .andExpect(status().isOk());
+        bookId = 2;
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId)).andExpect(status().isOk());
+
+        bookId = 3;
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/books/{id}", bookId)).andExpect(status().isOk());
     }
 }

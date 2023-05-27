@@ -1,11 +1,16 @@
 package ru.otus.spring.testcontainers.integration;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +22,8 @@ import ru.otus.spring.model.Genre;
 import ru.otus.spring.repository.BookCommentRepo;
 import ru.otus.spring.repository.BookRepo;
 import ru.otus.spring.testcontainers.AbstractBaseContainer;
+import ru.otus.spring.testcontainers.WithMockAdmin;
+import ru.otus.spring.testcontainers.WithMockNonAdmin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +31,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("Integration tests for Books")
 @AutoConfigureMockMvc
@@ -47,17 +55,24 @@ class BookRestControllerIntegrationTest extends AbstractBaseContainer {
         EXPECTED_GENRES.add(new Genre(1, "Test genre 1"));
     }
 
+    @AfterEach
+    public void afterEach() {
+        SecurityContextHolder.clearContext();
+    }
+
     @DisplayName("Save Book")
     @Test
     @Transactional
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void saveBook() {
+
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication authentication = securityContext.getAuthentication();
 
         // Initial sequence set to 1000.
         long initialSequenceId = 1000;
 
-        Optional<Book> bookBefore = bookRepo.findById(initialSequenceId);
-        assertThat(bookBefore).isNotPresent();
+        assertThrows(AccessDeniedException.class, () -> bookRepo.findById(initialSequenceId));
 
         Book newBook = new Book(initialSequenceId, "New test book", EXPECTED_AUTHORS.get(0), EXPECTED_GENRES.get(0), new ArrayList<>());
         BookDto source = BookDto.toDto(newBook);
@@ -69,6 +84,11 @@ class BookRestControllerIntegrationTest extends AbstractBaseContainer {
                 .expectStatus().isOk()
                 .expectBody(BookDto.class)
                 .consumeWith(response -> Assertions.assertThat(response.getResponseBody()).isEqualTo(source));
+
+        // By some reason we have to restore context.
+        SecurityContext newSecurityContext = SecurityContextHolder.createEmptyContext();
+        newSecurityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(newSecurityContext);
 
         // Ensure the book added.
         Optional<Book> bookAfter = bookRepo.findById(initialSequenceId);
@@ -115,7 +135,7 @@ class BookRestControllerIntegrationTest extends AbstractBaseContainer {
     @DisplayName("Save Book by authenticated non-Admin user")
     @Test
     @Transactional
-    @WithMockUser(authorities = {"ROLE_COMMENTER", "ROLE_READER"})
+    @WithMockNonAdmin
     void saveBook_nonAdmin() {
 
         // Initial sequence set to 1000.
@@ -134,11 +154,14 @@ class BookRestControllerIntegrationTest extends AbstractBaseContainer {
     @DisplayName("Delete Book by ID")
     @Test
     @Transactional
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void deleteBookById() {
 
         long bookId = 1;
         long commentId1 = 1;
+
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication authentication = securityContext.getAuthentication();
 
         // Ensure that book and its comment presented in DB.
         Optional<Book> bookBefore = bookRepo.findById(bookId);
@@ -157,6 +180,11 @@ class BookRestControllerIntegrationTest extends AbstractBaseContainer {
                     Assertions.assertThat(map.getOrDefault("id", null)).isEqualTo((int) bookId);
                     Assertions.assertThat(map.getOrDefault("result", null)).isEqualTo("ok");
                 });
+
+        // By some reason we have to restore context.
+        SecurityContext newSecurityContext = SecurityContextHolder.createEmptyContext();
+        newSecurityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(newSecurityContext);
 
         // Check that the item doesn't exist in DB anymore.
         Optional<Book> bookAfter = bookRepo.findById(bookId);
