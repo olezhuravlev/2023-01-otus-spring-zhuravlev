@@ -15,6 +15,7 @@ import ru.otus.spring.config.ApplicationConfig;
 import ru.otus.spring.config.SecurityConfig;
 import ru.otus.spring.dto.SysInfoDto;
 import ru.otus.spring.service.SysInfoService;
+import ru.otus.spring.testcontainers.WithMockAdmin;
 
 import javax.sql.DataSource;
 
@@ -39,7 +40,7 @@ public class SysInfoControllerTest {
     private DataSource dataSource;
 
     @Test
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void getSysInfo() throws Exception {
 
         SysInfoDto expected = new SysInfoDto("1", "2", "3", "4");

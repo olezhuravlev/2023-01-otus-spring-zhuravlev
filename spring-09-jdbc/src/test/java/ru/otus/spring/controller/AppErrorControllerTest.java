@@ -13,6 +13,7 @@ import org.springframework.web.servlet.ModelAndView;
 import ru.otus.spring.component.ModelAndViewPopulator;
 import ru.otus.spring.config.SecurityConfig;
 import ru.otus.spring.service.SysInfoService;
+import ru.otus.spring.testcontainers.WithMockAdmin;
 
 import javax.sql.DataSource;
 
@@ -38,7 +39,7 @@ class AppErrorControllerTest {
     private DataSource dataSource;
 
     @Test
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void fillError404() throws Exception {
 
         String expectedViewName = "error/404";

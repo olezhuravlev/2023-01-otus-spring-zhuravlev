@@ -15,6 +15,7 @@ import ru.otus.spring.config.SecurityConfig;
 import ru.otus.spring.model.Genre;
 import ru.otus.spring.service.ApiGate;
 import ru.otus.spring.service.SysInfoService;
+import ru.otus.spring.testcontainers.WithMockAdmin;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -53,7 +54,7 @@ public class GenreRestControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void getGenres() throws Exception {
 
         given(apiGate.getGenres()).willReturn(EXPECTED_GENRES);

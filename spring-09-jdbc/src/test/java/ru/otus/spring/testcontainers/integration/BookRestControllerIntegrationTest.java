@@ -23,6 +23,7 @@ import ru.otus.spring.repository.BookCommentRepo;
 import ru.otus.spring.repository.BookRepo;
 import ru.otus.spring.testcontainers.AbstractBaseContainer;
 import ru.otus.spring.testcontainers.WithMockAdmin;
+import ru.otus.spring.testcontainers.WithMockAnonymous;
 import ru.otus.spring.testcontainers.WithMockNonAdmin;
 
 import java.util.ArrayList;
@@ -116,7 +117,7 @@ class BookRestControllerIntegrationTest extends AbstractBaseContainer {
     @DisplayName("Save Book by Anonymous user")
     @Test
     @Transactional
-    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    @WithMockAnonymous
     void saveBook_Anonymous() {
 
         // Initial sequence set to 1000.
@@ -211,7 +212,7 @@ class BookRestControllerIntegrationTest extends AbstractBaseContainer {
     @DisplayName("Delete Book by ID by Anonymous user")
     @Test
     @Transactional
-    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    @WithMockAnonymous
     void deleteBookById_Anonymous() {
 
         long bookId = 1;
@@ -225,7 +226,7 @@ class BookRestControllerIntegrationTest extends AbstractBaseContainer {
     @DisplayName("Delete Book by ID by non-Admin user")
     @Test
     @Transactional
-    @WithMockUser(authorities = {"ROLE_COMMENTER", "ROLE_READER"})
+    @WithMockNonAdmin
     void deleteBookById_nonAdmin() {
 
         long bookId = 1;

@@ -11,6 +11,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.testcontainers.AbstractBaseContainer;
+import ru.otus.spring.testcontainers.WithMockAdmin;
+import ru.otus.spring.testcontainers.WithMockAnonymous;
+import ru.otus.spring.testcontainers.WithMockNonAdmin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +39,7 @@ public class AuthorRestControllerIntegrationTest extends AbstractBaseContainer {
 
     @DisplayName("Request all authors from DB")
     @Test
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void requestAllAuthors() throws Exception {
         String expectedJson = new ObjectMapper().writeValueAsString(EXPECTED_AUTHORS);
         this.mockMvc.perform(MockMvcRequestBuilders.post("/authors"))
@@ -52,14 +55,14 @@ public class AuthorRestControllerIntegrationTest extends AbstractBaseContainer {
 
     @DisplayName("Request all authors by Anonymous user")
     @Test
-    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    @WithMockAnonymous
     void requestAllAuthors_Anonymous() throws Exception {
         this.mockMvc.perform(MockMvcRequestBuilders.post("/authors")).andExpect(status().is4xxClientError());
     }
 
     @DisplayName("Request all authors by authenticated non-Admin user")
     @Test
-    @WithMockUser(authorities = {"ROLE_COMMENTER", "ROLE_READER"})
+    @WithMockNonAdmin
     void requestAllAuthors_nonAdmin() throws Exception {
         this.mockMvc.perform(MockMvcRequestBuilders.post("/authors")).andExpect(status().is4xxClientError());
     }
