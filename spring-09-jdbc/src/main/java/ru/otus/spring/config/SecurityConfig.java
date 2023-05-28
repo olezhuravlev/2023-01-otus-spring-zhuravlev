@@ -6,7 +6,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.*;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -34,22 +37,46 @@ public class SecurityConfig {
     private static final String PASSWORD_PARAMETER = "password";
 
     @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return web -> web.ignoring().requestMatchers("/swagger-ui/**", "/swag");
+    }
+
+    @Bean
+    public Customizer<CsrfConfigurer<HttpSecurity>> csrfConfigurerCustomizer() {
+        return AbstractHttpConfigurer::disable;
+    }
+
+    @Bean
+    public Customizer<SessionManagementConfigurer<HttpSecurity>> sessionManagementConfigurerCustomizer() {
+        return httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.ALWAYS);
+    }
+
+    @Bean
+    public Customizer<RememberMeConfigurer<HttpSecurity>> rememberMeCustomizer() {
+        return httpSecurityRememberMeConfigurer -> httpSecurityRememberMeConfigurer.key(RM_SECRET).tokenValiditySeconds(RM_TOKEN_LIFETIME_SEC);
+    }
+
+    @Bean
+    public Customizer<LogoutConfigurer<HttpSecurity>> logoutCustomizer() {
+        return LogoutConfigurer::permitAll;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthorizationManager<RequestAuthorizationContext> authorizationManager) throws Exception {
-        http.csrf().disable()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
-                .and()
+
+        http.csrf(csrfConfigurerCustomizer())
+                .sessionManagement(sessionManagementConfigurerCustomizer())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.DELETE).access(authorizationManager)
                         .requestMatchers(HttpMethod.PUT).access(authorizationManager)
                         .requestMatchers(HttpMethod.POST).access(authorizationManager)
                         .anyRequest().authenticated())
-                .rememberMe().key(RM_SECRET).tokenValiditySeconds(RM_TOKEN_LIFETIME_SEC)
-                .and()
+                .rememberMe(rememberMeCustomizer())
                 .formLogin(form -> form.loginPage(LOGIN_PAGE_URL)
                         .usernameParameter(USERNAME_PARAMETER)
                         .passwordParameter(PASSWORD_PARAMETER)
                         .permitAll())
-                .logout().permitAll();
+                .logout(logoutCustomizer());
 
         return http.build();
     }

@@ -18,6 +18,7 @@ import ru.otus.spring.model.Book;
 import ru.otus.spring.model.BookComment;
 import ru.otus.spring.model.Genre;
 import ru.otus.spring.service.ApiGate;
+import ru.otus.spring.testcontainers.WithMockAdmin;
 
 import javax.sql.DataSource;
 import java.util.*;
@@ -72,7 +73,7 @@ public class BookControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void getBookById() throws Exception {
 
         long bookId = 1;
@@ -87,7 +88,7 @@ public class BookControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void getBookById_NoSuchElementException() throws Exception {
 
         long bookId = -1000;

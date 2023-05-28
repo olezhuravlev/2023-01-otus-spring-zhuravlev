@@ -4,4 +4,5 @@ VALUES (1, 'Mystery'),
        (3, 'Sci-Fi'),
        (4, 'Thriller'),
        (5, 'Biography'),
-       (6, 'Romance');
+       (6, 'Romance'),
+       (7, 'Tech');

@@ -4,9 +4,13 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.AllArgsConstructor;
 import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.security.acls.domain.BasePermission;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Repository;
 import ru.otus.spring.model.Book;
+import ru.otus.spring.service.AclPermissionService;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +20,8 @@ public class BookRepoJpa implements BookRepo {
 
     @PersistenceContext
     private final EntityManager entityManager;
+
+    private AclPermissionService aclPermissionService;
 
     @Override
     public List<Book> findAllWithAuthorAndGenre() {
@@ -38,12 +44,19 @@ public class BookRepoJpa implements BookRepo {
 
     @Override
     public Book save(Book book) {
+
+        Book result;
         if (book.getId() <= 0) {
             entityManager.persist(book);
-            return book;
+            result = book;
         } else {
-            return entityManager.merge(book);
+            result = entityManager.merge(book);
         }
+
+        // Only Admin allowed to create books, and granted with all permissions by default.
+        assignAdminPermissions(result);
+
+        return result;
     }
 
     @Override
@@ -52,5 +65,15 @@ public class BookRepoJpa implements BookRepo {
         if (toRemove != null) {
             entityManager.remove(toRemove);
         }
+    }
+
+    private void assignAdminPermissions(Book book) {
+        Arrays.asList(
+                        BasePermission.WRITE,
+                        BasePermission.READ,
+                        BasePermission.CREATE,
+                        BasePermission.DELETE,
+                        BasePermission.ADMINISTRATION)
+                .forEach(permission -> aclPermissionService.addPermissionForUser(book, permission, SecurityContextHolder.getContext().getAuthentication()));
     }
 }

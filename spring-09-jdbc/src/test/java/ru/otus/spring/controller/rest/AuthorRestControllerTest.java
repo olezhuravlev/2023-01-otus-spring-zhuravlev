@@ -15,6 +15,7 @@ import ru.otus.spring.config.SecurityConfig;
 import ru.otus.spring.model.Author;
 import ru.otus.spring.service.ApiGate;
 import ru.otus.spring.service.SysInfoService;
+import ru.otus.spring.testcontainers.WithMockAdmin;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public class AuthorRestControllerTest {
     }
 
     @Test
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void getAuthors() throws Exception {
 
         given(apiGate.getAuthors()).willReturn(EXPECTED_AUTHORS);

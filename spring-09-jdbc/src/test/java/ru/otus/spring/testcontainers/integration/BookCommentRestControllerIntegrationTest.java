@@ -12,6 +12,9 @@ import ru.otus.spring.dto.BookCommentDto;
 import ru.otus.spring.model.BookComment;
 import ru.otus.spring.repository.BookCommentRepo;
 import ru.otus.spring.testcontainers.AbstractBaseContainer;
+import ru.otus.spring.testcontainers.WithMockAdmin;
+import ru.otus.spring.testcontainers.WithMockAnonymous;
+import ru.otus.spring.testcontainers.WithMockNonAdmin;
 
 import java.util.Map;
 import java.util.Optional;
@@ -31,7 +34,7 @@ class BookCommentRestControllerIntegrationTest extends AbstractBaseContainer {
     @DisplayName("Save Book Comment")
     @Test
     @Transactional
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void saveBookComment() {
 
         // Initial sequence set to 1000.
@@ -79,7 +82,7 @@ class BookCommentRestControllerIntegrationTest extends AbstractBaseContainer {
     @DisplayName("Save Book Comment by Anonymous user")
     @Test
     @Transactional
-    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    @WithMockAnonymous
     void saveBookComment_Anonymous() {
 
         // Initial sequence set to 1000.
@@ -139,7 +142,7 @@ class BookCommentRestControllerIntegrationTest extends AbstractBaseContainer {
     @DisplayName("Delete Book Comment by ID")
     @Test
     @Transactional
-    @WithMockUser(authorities = {"ROLE_ADMIN"})
+    @WithMockAdmin
     void deleteBookCommentById() {
 
         long commentId = 1;
@@ -180,7 +183,7 @@ class BookCommentRestControllerIntegrationTest extends AbstractBaseContainer {
     @DisplayName("Delete Book Comment by ID by Anonymous user")
     @Test
     @Transactional
-    @WithMockUser(authorities = {"ROLE_ANONYMOUS"})
+    @WithMockAnonymous
     void deleteBookCommentById_Anonymous() {
 
         long commentId = 1;
@@ -194,7 +197,7 @@ class BookCommentRestControllerIntegrationTest extends AbstractBaseContainer {
     @DisplayName("Delete Book Comment by ID by non-Admin user")
     @Test
     @Transactional
-    @WithMockUser(authorities = {"ROLE_COMMENTER", "ROLE_READER"})
+    @WithMockNonAdmin
     void deleteBookCommentById_nonAdmin() {
 
         long commentId = 1;
