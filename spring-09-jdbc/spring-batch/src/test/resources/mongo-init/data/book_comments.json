@@ -1,0 +1,26 @@
+[
+  {
+    "_id": 1,
+    "bookId": 1,
+    "text": "Test Comment 1 (Book 1)",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 2,
+    "bookId": 1,
+    "text": "Test Comment 2 (Book 1)",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 3,
+    "bookId": 2,
+    "text": "Test Comment 3 (Book 2)",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 4,
+    "bookId": 2,
+    "text": "Test Comment 4 (Book 2)",
+    "_class": "ru.otus.spring.model.BookComment"
+  }
+]

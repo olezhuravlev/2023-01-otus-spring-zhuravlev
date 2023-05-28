@@ -1,0 +1,27 @@
+[
+  {
+    "_id": 2001,
+    "name": "Евгений Лукин",
+    "_class": "ru.otus.spring.model.Author"
+  },
+  {
+    "_id": 2002,
+    "name": "Сергей Лукьяненко",
+    "_class": "ru.otus.spring.model.Author"
+  },
+  {
+    "_id": 2003,
+    "name": "Олег Дивов",
+    "_class": "ru.otus.spring.model.Author"
+  },
+  {
+    "_id": 2004,
+    "name": "Александр Тамоников",
+    "_class": "ru.otus.spring.model.Author"
+  },
+  {
+    "_id": 2005,
+    "name": "Сергей Зверев",
+    "_class": "ru.otus.spring.model.Author"
+  }
+]

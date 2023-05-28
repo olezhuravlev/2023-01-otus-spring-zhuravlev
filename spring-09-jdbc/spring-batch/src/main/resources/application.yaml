@@ -1,0 +1,36 @@
+spring:
+  main:
+    allow-circular-references: true
+
+  batch:
+    job:
+      enabled: false # Disabled job run on startup.
+    jdbc:
+      initialize-schema: always
+
+  shell:
+    interactive:
+      enabled: true
+    noninteractive:
+      enabled: false
+
+    command:
+      version:
+        enabled: false
+
+  data:
+    mongodb:
+      host: mongodb
+      port: 27017
+      database: librarydb
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/librarydb
+    username: librarydb
+    password: librarydb
+    driver-class-name: org.postgresql.Driver
+
+server:
+  port: 8090
+
+#debug: true
