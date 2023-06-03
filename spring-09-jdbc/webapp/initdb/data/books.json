@@ -1,0 +1,65 @@
+[
+  {
+    "_id": 2001,
+    "title": "Зона справедливости",
+    "authorId": 2001,
+    "genreId": 2001,
+    "_class": "ru.otus.spring.model.Book"
+  },
+  {
+    "_id": 2002,
+    "title": "Петлистые времена",
+    "authorId": 2001,
+    "genreId": 2001,
+    "_class": "ru.otus.spring.model.Book"
+  },
+  {
+    "_id": 2003,
+    "title": "Ночной дозор",
+    "authorId": 2002,
+    "genreId": 2001,
+    "_class": "ru.otus.spring.model.Book"
+  },
+  {
+    "_id": 2004,
+    "title": "Звёздная тень",
+    "authorId": 2002,
+    "genreId": 2001,
+    "_class": "ru.otus.spring.model.Book"
+  },
+  {
+    "_id": 2005,
+    "title": "Лабиринт отражений",
+    "authorId": 2002,
+    "genreId": 2001,
+    "_class": "ru.otus.spring.model.Book"
+  },
+  {
+    "_id": 2006,
+    "title": "Закон лома для замкнутой цепи",
+    "authorId": 2003,
+    "genreId": 2001,
+    "_class": "ru.otus.spring.model.Book"
+  },
+  {
+    "_id": 2007,
+    "title": "Грозовые ворота",
+    "authorId": 2004,
+    "genreId": 2002,
+    "_class": "ru.otus.spring.model.Book"
+  },
+  {
+    "_id": 2008,
+    "title": "Лесная армия",
+    "authorId": 2004,
+    "genreId": 2002,
+    "_class": "ru.otus.spring.model.Book"
+  },
+  {
+    "_id": 2009,
+    "title": "Бессмертный эшелон",
+    "authorId": 2005,
+    "genreId": 2002,
+    "_class": "ru.otus.spring.model.Book"
+  }
+]

@@ -1,0 +1,12 @@
+[
+  {
+    "_id": 1,
+    "name": "Test Author 1",
+    "_class": "ru.otus.spring.model.Author"
+  },
+  {
+    "_id": 2,
+    "name": "Test Author 2",
+    "_class": "ru.otus.spring.model.Author"
+  }
+]

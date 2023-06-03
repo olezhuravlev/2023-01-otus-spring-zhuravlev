@@ -5,15 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.7</version>
+        <groupId>ru.otus.spring</groupId>
+        <artifactId>spring-09-jdbc</artifactId>
+        <version>3.1.0-SNAPSHOT</version>
     </parent>
 
     <groupId>ru.otus.spring</groupId>
-    <artifactId>spring-09-jdbc</artifactId>
+    <artifactId>webapp</artifactId>
     <version>3.1.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
     <name>Library Application</name>
     <description>OTUS homeworks: Library Application (Postgres version + Spring Security)</description>
 
@@ -28,13 +27,9 @@
         <springdoc-openapi-version>2.1.0</springdoc-openapi-version>
     </properties>
 
-    <modules>
-        <module>webapp</module>
-        <module>spring-batch</module>
-    </modules>
-
     <dependencyManagement>
         <dependencies>
+            <!-- https://mvnrepository.com/artifact/org.testcontainers/testcontainers-bom -->
             <dependency>
                 <groupId>org.testcontainers</groupId>
                 <artifactId>testcontainers-bom</artifactId>

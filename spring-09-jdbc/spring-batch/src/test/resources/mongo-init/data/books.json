@@ -1,0 +1,23 @@
+[
+  {
+    "_id": 1,
+    "title": "Test Book 1",
+    "authorId": 1,
+    "genreId": 1,
+    "_class": "ru.otus.spring.model.Book"
+  },
+  {
+    "_id": 2,
+    "title": "Test Book 2",
+    "authorId": 1,
+    "genreId": 1,
+    "_class": "ru.otus.spring.model.Book"
+  },
+  {
+    "_id": 3,
+    "title": "Test Book 3",
+    "authorId": 1,
+    "genreId": 2,
+    "_class": "ru.otus.spring.model.Book"
+  }
+]

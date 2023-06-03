@@ -1,0 +1,12 @@
+[
+  {
+    "_id": 2001,
+    "name": "Русская фантастика",
+    "_class": "ru.otus.spring.model.Genre"
+  },
+  {
+    "_id": 2002,
+    "name": "Русский боевик",
+    "_class": "ru.otus.spring.model.Genre"
+  }
+]

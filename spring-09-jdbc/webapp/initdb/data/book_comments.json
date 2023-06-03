@@ -1,0 +1,80 @@
+[
+  {
+    "_id": 2001,
+    "bookId": 2001,
+    "text": "Отлично! Перечитывал уже несколько раз.",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 2002,
+    "bookId": 2001,
+    "text": "Осталось двоякое ощущение: читать можно, но искры желания прочесть не останавливаясь - нету.",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 2003,
+    "bookId": 2001,
+    "text": "Концовочка резковато оборвана, не закончена.",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 2004,
+    "bookId": 2002,
+    "text": "Небольшой рассказ на извечную тему, что за все мы платим временем.",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 2005,
+    "bookId": 2002,
+    "text": "Короткая, динамичная история удивительно объемна, глубока и многогранна.",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 2006,
+    "bookId": 2003,
+    "text": "Перечитываю 'Дозоры' снова и снова и, все время, открываю для себя что-то новое.",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 2007,
+    "bookId": 2004,
+    "text": "Отличная космоопера, с поиском морально-этических оснований для существования цивилизации.",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 2008,
+    "bookId": 2005,
+    "text": "Прекрасная книга, велеколепный сюжет.",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 2009,
+    "bookId": 2006,
+    "text": "Очень неплохо - и остроумно, и увлекательно, и весело.",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 2010,
+    "bookId": 2007,
+    "text": "Достойная книга, которая не оставит равнодушным никого. Читается очень легко и на одном дыхании.",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 2011,
+    "bookId": 2008,
+    "text": "Откровенно средненько. Автор способен на большее. Достаточно живенько и непринуждённо.",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 2012,
+    "bookId": 2008,
+    "text": "Рекомендую, читается легко. Сюжет не избит.",
+    "_class": "ru.otus.spring.model.BookComment"
+  },
+  {
+    "_id": 2013,
+    "bookId": 2008,
+    "text": "Интересно, захватывающе как всегда. Читать легко, что даже не замечаешь время.",
+    "_class": "ru.otus.spring.model.BookComment"
+  }
+]

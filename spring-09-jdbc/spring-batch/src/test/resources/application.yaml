@@ -1,0 +1,14 @@
+spring:
+  main:
+    allow-circular-references: true
+  batch:
+    job:
+      enabled: false # Disabled job run on startup.
+    jdbc:
+      initialize-schema: always
+  shell:
+    interactive:
+      enabled: false
+  data:
+    mongodb:
+      database: librarydb
