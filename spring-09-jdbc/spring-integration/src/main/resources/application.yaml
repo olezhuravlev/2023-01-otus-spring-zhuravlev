@@ -1,0 +1,18 @@
+spring:
+  shell:
+    interactive:
+      enabled: true
+    noninteractive:
+      enabled: false
+    command:
+      version:
+        enabled: false
+  integration:
+    management:
+      default-logging-enabled: true
+
+logging:
+  level:
+    root: info
+    sun: info
+    javax: info
