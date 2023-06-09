@@ -31,6 +31,7 @@
     <modules>
         <module>webapp</module>
         <module>spring-batch</module>
+        <module>spring-integration</module>
     </modules>
 
     <dependencyManagement>
