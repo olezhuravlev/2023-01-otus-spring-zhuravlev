@@ -50,7 +50,7 @@ services:
       postgres:
         condition: service_healthy
   webapp-pg:
-    image: olezhuravlev/webapp-pg:3.1.0
+    image: olezhuravlev/webapp-pg:3.2.0
     container_name: webapp-pg
     #    ports:
     #      - 8080:8080
@@ -58,3 +58,29 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "http://localhost:8080" ]
+      interval: 5s
+      timeout: 15s
+      retries: 3
+      start_period: 60s
+  prometheus:
+    image: prom/prometheus:v2.44.0 # has 'wget' utility
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    depends_on:
+      webapp-pg:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "-O", "index.html", "http://localhost:9090" ]
+      interval: 5s
+      timeout: 15s
+      retries: 3
+      start_period: 60s

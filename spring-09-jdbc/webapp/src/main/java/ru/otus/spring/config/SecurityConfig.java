@@ -38,7 +38,12 @@ public class SecurityConfig {
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
-        return web -> web.ignoring().requestMatchers("/swagger-ui/**", "/swag");
+        return web -> web.ignoring()
+                .requestMatchers("/swagger-ui/**", "/swag") // Swagger
+                .requestMatchers("/actuator/**") // Spring Actuator
+                .requestMatchers("/explorer/**") // HAL
+                .requestMatchers("/authors-datarest/**", "/genres-datarest/**") // Spring Data Rest
+                .requestMatchers("/custom-health/**"); // Custom healthcheck
     }
 
     @Bean
