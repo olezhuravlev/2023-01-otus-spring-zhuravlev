@@ -31,16 +31,66 @@ spring:
         hbm2ddl:
           auto: create-drop
     defer-datasource-initialization: true
+  jmx:
+    enabled: true
+  output:
+    ansi:
+      enabled: always
+#  data:
+#    rest:
+#      base-path: "/some-path" # Alternative path for Spring Data Rest.
 logging:
   level:
-    ROOT: DEBUG
-#    org:
-#      hibernate:
-#        type: trace
-server:
-  port: 8080
+    ROOT: debug
+    org.springframework.web: debug
+    org.springframework.security: debug
+    org.springframework.orm.hibernate5: debug
+  file:
+    name: webapp-logs/my-log.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100KB
+      clean-history-on-start: true
+      total-size-cap: 1MB
+      file-name-pattern: ${LOG_FILE}.%d{yyyy-MM-dd-hh:mm:ss}.%i.gz
 
 springdoc:
   swagger-ui:
     disable-swagger-default-url: true
     path: swag
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      #base-path: # path to Spring Actuator. Default is "/actuator".
+    enabled-by-default: true
+  endpoint:
+    health:
+      show-details: always
+      enabled: true
+      show-components: always
+      probes:
+        enabled: true
+        add-additional-paths: true
+      group:
+        custom:
+          include:
+            - diskSpace,ping
+    prometheus:
+      enabled: true
+  health:
+    defaults:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+
+server:
+  port: 8080

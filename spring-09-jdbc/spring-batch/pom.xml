@@ -7,12 +7,12 @@
     <parent>
         <groupId>ru.otus.spring</groupId>
         <artifactId>spring-09-jdbc</artifactId>
-        <version>3.1.0-SNAPSHOT</version>
+        <version>3.2.0-SNAPSHOT</version>
     </parent>
 
     <groupId>ru.otus.spring</groupId>
     <artifactId>spring-batch</artifactId>
-    <version>3.1.0-SNAPSHOT</version>
+    <version>3.2.0-SNAPSHOT</version>
     <name>Library Application Spring Batch</name>
     <description>OTUS homeworks: Spring Batch utility for Library Application</description>
 

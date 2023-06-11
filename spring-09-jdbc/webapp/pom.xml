@@ -7,12 +7,12 @@
     <parent>
         <groupId>ru.otus.spring</groupId>
         <artifactId>spring-09-jdbc</artifactId>
-        <version>3.1.0-SNAPSHOT</version>
+        <version>3.2.0-SNAPSHOT</version>
     </parent>
 
     <groupId>ru.otus.spring</groupId>
     <artifactId>webapp</artifactId>
-    <version>3.1.0-SNAPSHOT</version>
+    <version>3.2.0-SNAPSHOT</version>
     <name>Library Application</name>
     <description>OTUS homeworks: Library Application (Postgres version + Spring Security)</description>
 
