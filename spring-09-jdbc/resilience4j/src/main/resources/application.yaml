@@ -1,0 +1,132 @@
+application:
+  locale: ru_RU
+  empty-item-id: -1
+
+spring:
+  mvc:
+    throw-exception-if-no-handler-found: true
+
+logging:
+  level:
+    ROOT: debug
+    org.springframework.web: debug
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+    enabled-by-default: true
+  endpoint:
+    health:
+      show-details: always
+      enabled: true
+      show-components: always
+      probes:
+        enabled: true
+        add-additional-paths: true
+      group:
+        custom:
+          include:
+            - diskSpace,ping
+    prometheus:
+      enabled: true
+  health:
+    defaults:
+      enabled: true
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        "[http.server.requests]": true
+
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      registerHealthIndicator: true
+      slidingWindowSize: 10
+      minimumNumberOfCalls: 5
+      permittedNumberOfCallsInHalfOpenState: 3
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+      waitDurationInOpenState: 5s
+      failureRateThreshold: 50
+      eventConsumerBufferSize: 10
+      recordExceptions:
+        - org.springframework.web.client.HttpServerErrorException
+        - java.util.concurrent.TimeoutException
+        - java.io.IOException
+      ignoreExceptions:
+        - ru.otus.spring.resilience4j.exception.BusinessException
+    shared:
+      slidingWindowSize: 100
+      permittedNumberOfCallsInHalfOpenState: 30
+      waitDurationInOpenState: 1s
+      failureRateThreshold: 50
+      eventConsumerBufferSize: 10
+      ignoreExceptions:
+        - ru.otus.spring.resilience4j.exception.BusinessException
+  instances:
+    homeApi:
+      slidingWindowSize: 10
+      permittedNumberOfCallsInHalfOpenState: 3
+      slidingWindowType: COUNT_BASED
+      minimumNumberOfCalls: 5
+      waitDurationInOpenState: 5s
+      failureRateThreshold: 50
+      automatic-transition-from-open-to-half-open-enabled: true
+#      registerHealthIndicator: true
+#      eventConsumerBufferSize: 10
+#      recordFailurePredicate: ru.otus.spring.resilience4j.exception.RecordFailurePredicate
+
+#resilience4j.ratelimiter:
+#  instances:
+#    homeApi:
+#      limitForPeriod: 10
+#      limitRefreshPeriod: 3s
+#      timeoutDuration: 2s
+#      registerHealthIndicator: true
+#      eventConsumerBufferSize: 100
+
+#resilience4j.bulkhead:
+#  instances:
+#    homeApi:
+#      maxWaitDuration: 1ms
+#      maxConcurrentCalls: 1
+
+#resilience4j.thread-pool-bulkhead:
+#  instances:
+#    homeApi:
+#      maxThreadPoolSize: 1
+#      coreThreadPoolSize: 1
+#      queueCapacity: 1
+#      writableStackTraceEnabled: true
+#
+#resilience4j.retry:
+#  instances:
+#    homeApi:
+#      maxAttempts: 3
+#      waitDuration: 10s
+#      enableExponentialBackoff: true
+#      exponentialBackoffMultiplier: 2
+#      retryExceptions:
+#        - org.springframework.web.client.HttpServerErrorException
+#        - java.io.IOException
+#      ignoreExceptions:
+#        - ru.otus.spring.resilience4j.exception.BusinessException
+#
+#resilience4j.timelimiter:
+#  instances:
+#    homeApi:
+#      timeoutDuration: 2s
+#      cancelRunningFuture: true
+
+---
+server:
+  port: 8090

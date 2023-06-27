@@ -32,6 +32,7 @@
         <module>webapp</module>
         <module>spring-batch</module>
         <module>spring-integration</module>
+        <module>resilience4j</module>
     </modules>
 
     <dependencyManagement>
