@@ -64,23 +64,23 @@ services:
       timeout: 15s
       retries: 3
       start_period: 60s
-  prometheus:
-    image: prom/prometheus:v2.44.0 # has 'wget' utility
-    container_name: prometheus
-    ports:
-      - 9090:9090
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    depends_on:
-      webapp-pg:
-        condition: service_healthy
-    healthcheck:
-      test: [ "CMD", "wget", "-O", "index.html", "http://localhost:9090" ]
-      interval: 5s
-      timeout: 15s
-      retries: 3
-      start_period: 60s
+#  prometheus:
+#    image: prom/prometheus:v2.44.0 # has 'wget' utility
+#    container_name: prometheus
+#    ports:
+#      - 9090:9090
+#    volumes:
+#      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+#    command:
+#      - '--config.file=/etc/prometheus/prometheus.yml'
+#    extra_hosts:
+#      - 'host.docker.internal:host-gateway'
+#    depends_on:
+#      webapp-pg:
+#        condition: service_healthy
+#    healthcheck:
+#      test: [ "CMD", "wget", "-O", "index.html", "http://localhost:9090" ]
+#      interval: 5s
+#      timeout: 15s
+#      retries: 3
+#      start_period: 60s
