@@ -13,8 +13,8 @@
     <groupId>ru.otus.spring</groupId>
     <artifactId>resilience4j</artifactId>
     <version>3.2.0-SNAPSHOT</version>
-    <name>Resilience4j API Gateway for Library Application</name>
-    <description>OTUS homeworks: Resilience4j API Gateway for Library Application</description>
+    <name>Spring Gateway for Library Application</name>
+    <description>OTUS homeworks: Spring Gateway for Library Application</description>
 
     <properties>
         <java.version>17</java.version>
@@ -31,28 +31,18 @@
             <artifactId>spring-cloud-starter-gateway</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-contract-stub-runner</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
+        <!-- Reactive version -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
         </dependency>
     </dependencies>
 

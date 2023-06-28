@@ -8,6 +8,6 @@ public class Resilience4jController {
 
     @GetMapping("/fallback")
     public String fallback() {
-        return "Sorry, we're out of order!";
+        return "<h1>Sorry, we're out of order!</h1>";
     }
 }

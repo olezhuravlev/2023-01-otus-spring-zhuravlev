@@ -20,16 +20,21 @@ public class AppConfig {
         return builder.routes()
                 .route(p -> p
                         .path("/**")
-                        .filters(f -> f.circuitBreaker(config -> config.setName("webapp")
-                                .setFallbackUri("forward:/fallback")))
+                        .filters(f -> f.circuitBreaker(config -> config.setFallbackUri("forward:/fallback")))
                         .uri("http://localhost:8080"))
                 .build();
     }
 
     @Bean
-    public Customizer<Resilience4JCircuitBreakerFactory> defaultCustomizer() {
+    public Customizer<Resilience4JCircuitBreakerFactory> circuitBreakerConfiguration() {
         return factory -> factory.configureDefault(id -> new Resilience4JConfigBuilder(id)
-                .circuitBreakerConfig(CircuitBreakerConfig.ofDefaults())
+                .circuitBreakerConfig(CircuitBreakerConfig.custom()
+                        .permittedNumberOfCallsInHalfOpenState(3)
+                        .failureRateThreshold(50.0F)
+                        .waitDurationInOpenState(Duration.ofMillis(200))
+                        .slowCallDurationThreshold(Duration.ofMillis(500))
+                        .slowCallRateThreshold(50.0F)
+                        .build())
                 .timeLimiterConfig(TimeLimiterConfig.custom().timeoutDuration(Duration.ofMillis(200)).build())
                 .build());
     }
